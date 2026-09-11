@@ -1,5 +1,5 @@
 // One-off (re-runnable) script that generates the PWA icon set from
-// public/opa-logo.jpg. Re-run this if the logo ever changes.
+// public/mitron-logo.png. Re-run this if the logo ever changes.
 //
 // Usage: node scripts/generate-pwa-icons.js
 
@@ -7,7 +7,7 @@ const path = require('path');
 const fs = require('fs');
 const sharp = require('sharp');
 
-const SRC = path.join(__dirname, '..', 'public', 'opa-logo.jpg');
+const SRC = path.join(__dirname, '..', 'public', 'mitron-logo.png');
 const OUT_DIR = path.join(__dirname, '..', 'public', 'icons');
 
 // Matches the app's own dark background (--background in globals.css) so

@@ -36,7 +36,7 @@ export async function downloadTableQrPdf(tableNumbers: number[]) {
 
     doc.setFontSize(11);
     doc.setFont('helvetica', 'bold');
-    doc.text('OPA Bar & Cafe', cellX + cellW / 2, cellY + 4, { align: 'center' });
+    doc.text('Mitron Thane', cellX + cellW / 2, cellY + 4, { align: 'center' });
 
     doc.setFontSize(13);
     doc.text(`Table ${tableNumber}`, cellX + cellW / 2, qrY + qrSize + 6, { align: 'center' });

@@ -16,8 +16,8 @@ export default async function AdminLoginPage() {
         <div className="flex flex-col items-center text-center space-y-3">
           <div className="relative h-20 w-20 overflow-hidden rounded-2xl border border-amber-500/30 shadow-lg">
             <Image
-              src="/opa-logo.jpg"
-              alt="OPA Logo"
+              src="/mitron-logo.png"
+              alt="Mitron Thane logo"
               fill
               sizes="80px"
               className="object-cover"
@@ -25,7 +25,7 @@ export default async function AdminLoginPage() {
             />
           </div>
           <div>
-            <h1 className="text-xl font-extrabold gold-text-gradient">OPA BAR &amp; CAFE</h1>
+            <h1 className="text-xl font-extrabold gold-text-gradient">MITRON THANE</h1>
             <p className="text-xs text-amber-200/60 font-medium">Staff &amp; Admin Portal</p>
           </div>
         </div>

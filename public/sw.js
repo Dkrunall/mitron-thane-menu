@@ -1,4 +1,4 @@
-// OPA Bar & Cafe — service worker
+// Mitron Thane — service worker
 //
 // Only job: receive Web Push events and show a notification, and route a
 // tap on that notification to the right order-status page. This is what
@@ -30,17 +30,17 @@ self.addEventListener('push', (event) => {
   try {
     data = event.data.json();
   } catch {
-    data = { title: 'OPA Bar & Cafe', body: event.data.text() };
+    data = { title: 'Mitron Thane', body: event.data.text() };
   }
 
   const { title, body, url, tag } = data;
 
   event.waitUntil(
-    self.registration.showNotification(title || 'OPA Bar & Cafe', {
+    self.registration.showNotification(title || 'Mitron Thane', {
       body,
       icon: '/icons/icon-192.png',
       badge: '/icons/icon-192.png',
-      tag: tag || 'opa-notification',
+      tag: tag || 'mitron-notification',
       vibrate: [200, 100, 200],
       data: { url: url || '/' },
     })

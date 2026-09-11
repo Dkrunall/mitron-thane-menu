@@ -28,8 +28,8 @@ export default async function ProtectedAdminLayout({ children }: { children: Rea
             <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
               <div className="relative flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/10 shadow-md">
                 <Image
-                  src="/opa-logo.jpg"
-                  alt="OPA Logo"
+                  src="/mitron-logo.png"
+                  alt="Mitron Thane logo"
                   fill
                   sizes="36px"
                   className="object-cover"
@@ -37,7 +37,7 @@ export default async function ProtectedAdminLayout({ children }: { children: Rea
               </div>
               <div className="min-w-0">
                 <p className="truncate text-xs sm:text-sm font-extrabold tracking-tight text-zinc-100">
-                  OPA Admin
+                  Mitron Admin
                 </p>
                 <div className="flex items-center gap-1.5">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />

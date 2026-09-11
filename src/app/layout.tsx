@@ -18,13 +18,13 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "OPA Bar & Cafe",
-  description: "Scan, order, enjoy — table ordering for OPA Bar & Cafe.",
+  title: "Mitron Thane",
+  description: "Scan, order, enjoy — table ordering for Mitron Thane.",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "OPA Bar & Cafe",
+    title: "Mitron Thane",
   },
   icons: {
     icon: [

@@ -2,20 +2,17 @@ import Link from 'next/link';
 import Image from 'next/image';
 
 export default function Home() {
-  const VIDEO_URL = 'https://d1hddaam55e99y.cloudfront.net/1076/blank-menu/menu_video_1772730647976.mp4';
-
   return (
     <div className="relative flex min-h-screen w-full flex-col items-center justify-center overflow-hidden px-4 py-8 bg-[#09090b]">
-      {/* Background Ambient Video with subtle cinematic grain */}
-      <video
-        autoPlay
-        loop
-        muted
-        playsInline
-        className="absolute inset-0 h-full w-full object-cover opacity-35 filter brightness-90"
-      >
-        <source src={VIDEO_URL} type="video/mp4" />
-      </video>
+      {/* Background ambient photo with subtle cinematic grain */}
+      <Image
+        src="/mitron-hero.jpg"
+        alt=""
+        fill
+        sizes="100vw"
+        className="object-cover opacity-35 filter brightness-90"
+        priority
+      />
 
       {/* Modern dark matte overlay */}
       <div className="absolute inset-0 bg-gradient-to-t from-[#09090b] via-[#09090b]/80 to-black/70 backdrop-blur-[2px]" />
@@ -26,8 +23,8 @@ export default function Home() {
         {/* Brand Circular Logo with soft gold ring */}
         <div className="relative h-24 w-24 sm:h-28 sm:w-28 overflow-hidden rounded-full border-2 border-amber-400/80 shadow-2xl shadow-amber-500/20 transition-transform duration-500 hover:scale-105">
           <Image
-            src="/opa-logo.jpg"
-            alt="OPA Bar & Cafe"
+            src="/mitron-logo.png"
+            alt="Mitron Thane"
             fill
             sizes="(min-width: 640px) 112px, 96px"
             className="object-cover"
@@ -38,10 +35,10 @@ export default function Home() {
         {/* Brand Title & Tagline */}
         <div className="space-y-1 text-center">
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight gold-text">
-            OPA BAR &amp; CAFE
+            MITRON THANE
           </h1>
           <p className="text-[11px] sm:text-xs font-semibold tracking-widest uppercase text-zinc-400">
-            Luxury Dining &amp; Cocktails
+            Global Cuisine &amp; Cocktails
           </p>
         </div>
 

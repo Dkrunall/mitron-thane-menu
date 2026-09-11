@@ -2,9 +2,9 @@ import type { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'OPA Bar & Cafe',
-    short_name: 'OPA',
-    description: 'Scan, order, enjoy — table ordering for OPA Bar & Cafe.',
+    name: 'Mitron Thane',
+    short_name: 'Mitron',
+    description: 'Scan, order, enjoy — table ordering for Mitron Thane.',
     start_url: '/',
     scope: '/',
     display: 'standalone',

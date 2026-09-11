@@ -2,9 +2,7 @@
 
 import Image from 'next/image';
 
-const VIDEO_URL = 'https://d1hddaam55e99y.cloudfront.net/1076/blank-menu/menu_video_1772730647976.mp4';
-
-/** Compact atmospheric video banner + topbar (table number, staff login). */
+/** Compact atmospheric banner + topbar (table number, staff login). */
 export function HeroVideoHeader({
   tableNumber,
   children,
@@ -14,17 +12,16 @@ export function HeroVideoHeader({
 }) {
   return (
     <div className="relative w-full bg-[#0d0b09] text-white pb-10 mb-2">
-      {/* Background Video player container */}
+      {/* Background image container */}
       <div className="relative h-[62vh] min-h-[440px] w-full overflow-hidden rounded-b-[38px] sm:rounded-b-[48px] border-b border-amber-400/25 shadow-2xl">
-        <video
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="absolute inset-0 h-full w-full object-cover opacity-80"
-        >
-          <source src={VIDEO_URL} type="video/mp4" />
-        </video>
+        <Image
+          src="/mitron-hero.jpg"
+          alt=""
+          fill
+          sizes="100vw"
+          className="object-cover opacity-80"
+          priority
+        />
 
         {/* Dark luxury overlay vignette with amber ambient glow */}
         <div className="absolute inset-0 bg-gradient-to-t from-[#0d0b09] via-black/40 to-black/70" />
@@ -42,8 +39,8 @@ export function HeroVideoHeader({
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 translate-y-1/2 z-30">
         <div className="relative h-20 w-20 sm:h-24 sm:w-24 overflow-hidden rounded-full border-[3px] border-amber-400/80 bg-[#0d0b09] shadow-2xl gold-glow transition-transform duration-500 hover:scale-105">
           <Image
-            src="/opa-logo.jpg"
-            alt="OPA Logo"
+            src="/mitron-logo.png"
+            alt="Mitron Thane logo"
             fill
             sizes="(min-width: 640px) 96px, 80px"
             className="object-cover"
