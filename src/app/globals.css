@@ -1,18 +1,22 @@
 @import "tailwindcss";
 
+/* Mitron Thane brand palette, sampled from their actual logo
+   (public/mitron-logo.png): a vivid coral/red-orange badge fill with a
+   magenta-to-gold gradient ring. Replaces OPA's amber/gold theme. */
 :root {
   --background: #09090b;
   --foreground: #f4f4f5;
   --card: #121215;
   --card-hover: #18181c;
-  --card-border: rgba(245, 158, 11, 0.15);
+  --card-border: rgba(230, 64, 26, 0.18);
   --muted: #a1a1aa;
   --muted-light: #71717a;
-  --accent: #eab308;
-  --accent-hover: #ca8a04;
-  --accent-light: #fde047;
+  --accent: #e6401a;
+  --accent-hover: #c9330f;
+  --accent-light: #f37540;
   --accent-foreground: #000000;
-  --gold-gradient: linear-gradient(135deg, #fef08a 0%, #eab308 50%, #ca8a04 100%);
+  --mitron-pink: #e90197;
+  --gold-gradient: linear-gradient(135deg, #ffa200 0%, #e6401a 55%, #c9330f 100%);
 }
 
 @theme inline {
@@ -25,6 +29,22 @@
   --color-accent-foreground: var(--accent-foreground);
   --font-sans: var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-heading: var(--font-heading), -apple-system, BlinkMacSystemFont, sans-serif;
+
+  /* Overrides Tailwind's built-in amber-* scale so every existing
+     amber-* utility class across the app (text-amber-400,
+     border-amber-500/30, bg-amber-500/15, ...) renders in Mitron's
+     coral/orange instead of OPA's gold, with no per-component changes. */
+  --color-amber-50: #fef2ec;
+  --color-amber-100: #fde1d3;
+  --color-amber-200: #fbc4a8;
+  --color-amber-300: #f89e72;
+  --color-amber-400: #f37540;
+  --color-amber-500: #e6401a;
+  --color-amber-600: #c9330f;
+  --color-amber-700: #a3280c;
+  --color-amber-800: #7c1f0a;
+  --color-amber-900: #5c1808;
+  --color-amber-950: #3a0f05;
 }
 
 body {
@@ -76,7 +96,7 @@ h6 {
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #eab308;
+  background: #e6401a;
 }
 
 /* Sleek Minimal Luxury Glass Cards */
@@ -90,8 +110,32 @@ h6 {
 }
 
 .luxury-card:hover {
-  border-color: rgba(234, 179, 8, 0.3);
-  box-shadow: 0 15px 35px -10px rgba(234, 179, 8, 0.12);
+  border-color: rgba(230, 64, 26, 0.3);
+  box-shadow: 0 15px 35px -10px rgba(230, 64, 26, 0.12);
+}
+
+/* Referenced across the admin login / order pages but never previously
+   defined (a pre-existing gap — those classNames had no effect). Now a
+   real soft glow / gradient in Mitron's coral-to-pink brand colors. */
+.gold-glow {
+  box-shadow: 0 0 40px -8px rgba(230, 64, 26, 0.35), 0 0 80px -20px rgba(233, 1, 151, 0.2);
+}
+
+.gold-glow-sm {
+  box-shadow: 0 0 24px -6px rgba(230, 64, 26, 0.3);
+}
+
+.gold-text-gradient {
+  background: linear-gradient(135deg, #ffffff 0%, #f37540 45%, #e6401a 80%, var(--mitron-pink) 120%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Also referenced but previously undefined, same as .gold-glow above. */
+.glass-panel {
+  background: rgba(18, 18, 21, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
 .glass-header {
@@ -103,17 +147,17 @@ h6 {
 }
 
 .gold-gradient-btn {
-  background: linear-gradient(135deg, #fef08a 0%, #eab308 50%, #ca8a04 100%);
+  background: linear-gradient(135deg, #ffa200 0%, #e6401a 55%, #c9330f 100%);
   color: #000000;
   font-weight: 800;
   letter-spacing: 0.02em;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 4px 20px -2px rgba(234, 179, 8, 0.35);
+  box-shadow: 0 4px 20px -2px rgba(230, 64, 26, 0.35);
 }
 
 .gold-gradient-btn:hover {
   filter: brightness(1.08);
-  box-shadow: 0 6px 25px rgba(234, 179, 8, 0.45);
+  box-shadow: 0 6px 25px rgba(230, 64, 26, 0.45);
 }
 
 .gold-gradient-btn:active {
@@ -121,7 +165,7 @@ h6 {
 }
 
 .gold-text {
-  background: linear-gradient(135deg, #ffffff 0%, #fef08a 40%, #eab308 100%);
+  background: linear-gradient(135deg, #ffffff 0%, #ffa200 40%, #e6401a 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }

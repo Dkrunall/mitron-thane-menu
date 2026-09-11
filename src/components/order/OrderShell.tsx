@@ -13,7 +13,7 @@ function CartBar({ tableNumber }: { tableNumber: number }) {
     <div className="fixed inset-x-0 bottom-0 z-30 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pointer-events-none flex justify-center">
       <Link
         href={`/order/cart?table=${tableNumber}`}
-        className="gold-gradient-btn pointer-events-auto w-full max-w-lg flex items-center justify-between gap-3 sm:gap-4 rounded-2xl px-4 sm:px-5 py-3.5 shadow-2xl border border-yellow-300/40"
+        className="gold-gradient-btn pointer-events-auto w-full max-w-lg flex items-center justify-between gap-3 sm:gap-4 rounded-2xl px-4 sm:px-5 py-3.5 shadow-2xl border border-amber-300/40"
       >
         <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-black text-amber-300 text-xs font-extrabold">
