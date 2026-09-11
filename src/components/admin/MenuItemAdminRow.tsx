@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react';
 import type { MenuItem } from '@/types/menu';
 import { deleteMenuItem, setMenuItemAvailability } from '@/lib/actions/menu';
 import { formatPrice } from '@/lib/format';
+import { AlcoholicBadge, FssaiDietaryIcon } from '@/components/order/DietaryBadge';
 import { MenuItemForm } from './MenuItemForm';
 
 export function MenuItemAdminRow({ item, categoryId }: { item: MenuItem; categoryId: string }) {
@@ -33,7 +34,7 @@ export function MenuItemAdminRow({ item, categoryId }: { item: MenuItem; categor
 
   if (editing) {
     return (
-      <div className="rounded-2xl border border-white/10 bg-[#16161a] p-4 sm:p-5 shadow-2xl">
+      <div className="rounded-2xl border border-white/15 bg-[#16161a] p-4 sm:p-5 shadow-2xl">
         <MenuItemForm
           categoryId={categoryId}
           itemId={item.id}
@@ -56,10 +57,16 @@ export function MenuItemAdminRow({ item, categoryId }: { item: MenuItem; categor
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-white/10 bg-[#121215] p-3.5 sm:p-4 shadow-lg transition-all hover:border-white/20 hover:bg-[#16161a]">
-      <div className="min-w-0 basis-full sm:flex-1 space-y-0.5">
-        <p className="truncate font-bold text-zinc-100 text-sm sm:text-base">{item.name}</p>
-        <p className="text-xs font-semibold text-amber-400">
+    <div className={`flex flex-wrap items-center gap-3 rounded-2xl border p-3.5 sm:p-4 shadow-lg transition-all duration-200 hover:border-white/20 hover:bg-[#15151a] ${
+      !item.isAvailable ? 'border-white/5 bg-[#121215]/60 opacity-60' : 'border-white/10 bg-[#121215]'
+    }`}>
+      <div className="min-w-0 basis-full sm:flex-1 space-y-1">
+        <div className="flex items-center gap-2 flex-wrap">
+          {item.dietaryType ? <FssaiDietaryIcon type={item.dietaryType} /> : null}
+          {item.isAlcoholic ? <AlcoholicBadge /> : null}
+          <p className="truncate font-bold text-zinc-100 text-sm sm:text-base">{item.name}</p>
+        </div>
+        <p className="text-xs sm:text-sm font-extrabold text-[#f97316]">
           {item.variants.length > 0
             ? `From ${formatPrice(Math.min(...item.variants.map((v) => v.price)))} · ${item.variants.length} variant(s)`
             : formatPrice(item.price)}
@@ -81,7 +88,7 @@ export function MenuItemAdminRow({ item, categoryId }: { item: MenuItem; categor
         <button
           type="button"
           onClick={() => setEditing(true)}
-          className="rounded-xl border border-white/10 bg-zinc-900 px-3 py-1.5 text-xs font-semibold text-zinc-300 hover:bg-zinc-800 hover:text-white transition-all cursor-pointer"
+          className="rounded-xl border border-white/10 bg-white/[0.06] hover:bg-white/10 px-3.5 py-1.5 text-xs font-semibold text-zinc-200 hover:text-white active:scale-95 transition-all cursor-pointer"
         >
           Edit
         </button>
@@ -89,7 +96,7 @@ export function MenuItemAdminRow({ item, categoryId }: { item: MenuItem; categor
           type="button"
           onClick={handleDelete}
           disabled={isPending}
-          className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 py-1.5 text-xs font-semibold text-rose-400 hover:bg-rose-500/20 transition-all cursor-pointer"
+          className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-3.5 py-1.5 text-xs font-semibold text-rose-400 hover:bg-rose-500/20 active:scale-95 transition-all cursor-pointer"
         >
           Delete
         </button>

@@ -33,19 +33,19 @@ export function CategoryCard({
   }
 
   return (
-    <div className="group relative rounded-2xl border border-white/10 bg-[#121215] p-3.5 sm:p-4 shadow-lg transition-all hover:border-amber-400/50 hover:bg-[#16161a]">
+    <div className="group relative rounded-2xl border border-white/10 bg-[#121215] p-3.5 sm:p-4 shadow-lg transition-all duration-200 hover:border-[#ff6830]/40 hover:bg-[#15151a]">
       <Link href={`/admin/menu/${categoryId}`} className="flex items-center gap-3">
         {isValidImageSrc(imageUrl) ? (
-          <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl border border-white/10">
+          <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl border border-white/10 shadow-sm">
             <Image src={imageUrl} alt={name} fill sizes="48px" className="object-cover" />
           </div>
         ) : (
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-white/5 bg-zinc-900">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-white/5 bg-zinc-900/80">
             <PlateIcon className="h-5 w-5 text-zinc-500" />
           </div>
         )}
         <div className="min-w-0 flex-1">
-          <p className="truncate font-bold text-zinc-100 group-hover:text-amber-300 transition-colors text-sm sm:text-base">{name}</p>
+          <p className="truncate font-bold text-zinc-100 group-hover:text-[#ff8a3d] transition-colors text-sm sm:text-base">{name}</p>
           <p className="text-xs text-zinc-400 font-medium mt-0.5">
             {itemCount} {itemCount === 1 ? 'item' : 'items'}
           </p>
@@ -55,7 +55,7 @@ export function CategoryCard({
         type="button"
         onClick={handleDelete}
         disabled={isPending}
-        className="absolute top-3 right-3 hidden text-xs font-semibold text-rose-400 group-hover:block disabled:opacity-60 hover:text-rose-300 transition-colors cursor-pointer"
+        className="absolute top-3 right-3 hidden text-xs font-bold text-rose-400 group-hover:block disabled:opacity-60 hover:text-rose-300 transition-colors cursor-pointer rounded-lg border border-rose-500/30 bg-rose-950/40 px-2 py-0.5"
       >
         Delete
       </button>

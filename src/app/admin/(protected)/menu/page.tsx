@@ -13,21 +13,35 @@ export default async function AdminMenuPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-zinc-100">Menu Items</h1>
-        <p className="text-xs sm:text-sm text-zinc-400">
-          {sections.reduce((n, s) => n + s.categories.length, 0)} categories · {totalItems} items
-        </p>
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-5">
+        <div>
+          <h1 className="display text-3xl sm:text-4xl tracking-tight text-white">Menu Items</h1>
+          <p className="text-xs sm:text-sm text-zinc-400 font-medium">
+            Manage dishes, cocktails, bar items, and category hierarchy
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="glass-pill rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-xs font-bold text-zinc-300">
+            {sections.reduce((n, s) => n + s.categories.length, 0)} categories
+          </span>
+          <span className="glass-pill rounded-full border border-[#ff6830]/40 bg-[#ff6830]/10 px-3 py-1 text-xs font-bold text-[#ff8a3d]">
+            {totalItems} items
+          </span>
+        </div>
       </div>
 
       <div className="rounded-2xl border border-white/10 bg-[#121215] p-4 sm:p-5 shadow-xl">
-        <h2 className="mb-3 text-xs font-bold tracking-wider text-zinc-400 uppercase">Create New Category</h2>
+        <h2 className="mb-3 text-xs font-bold tracking-wider text-[#ff8a3d] uppercase">Create New Category</h2>
         <CategoryForm />
       </div>
 
       {sections.map((section) => (
-        <div key={section.section} className="space-y-3">
-          <h2 className="text-xs font-bold tracking-widest text-zinc-400 uppercase">{section.section}</h2>
+        <div key={section.section} className="space-y-3 pt-2">
+          <div className="flex items-center gap-2.5">
+            <span className="h-2 w-2 rounded-full bg-[#ff8a3d] shadow-[0_0_6px_#ff8a3d]" />
+            <h2 className="display text-xl tracking-tight text-white">{section.section}</h2>
+            <span className="h-px flex-1 bg-white/5" />
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
             {section.categories.map((cat) => (
               <CategoryCard

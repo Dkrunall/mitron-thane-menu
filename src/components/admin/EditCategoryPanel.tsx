@@ -13,13 +13,13 @@ export function EditCategoryPanel({ categoryId, initial }: { categoryId: string;
     return (
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-[#121215] p-4 sm:p-5 shadow-xl">
         <div>
-          <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-zinc-100">{initial.name}</h1>
-          <p className="text-xs sm:text-sm text-amber-400 font-semibold mt-0.5">{initial.section}</p>
+          <h1 className="display text-2xl sm:text-3xl tracking-tight text-white">{initial.name}</h1>
+          <p className="text-xs sm:text-sm text-[#ff8a3d] font-bold mt-0.5">{initial.section}</p>
         </div>
         <button
           type="button"
           onClick={() => setEditing(true)}
-          className="rounded-xl border border-white/10 bg-zinc-900 px-4 py-2 text-xs font-bold text-zinc-200 hover:border-amber-400/40 hover:text-amber-300 active:scale-95 transition-all cursor-pointer shadow-sm"
+          className="rounded-xl border border-white/10 bg-white/[0.06] hover:bg-white/10 px-4 py-2 text-xs font-bold text-zinc-200 hover:border-[#ff6830]/40 hover:text-[#ff8a3d] active:scale-95 transition-all cursor-pointer shadow-sm"
         >
           Edit Category
         </button>

@@ -38,7 +38,7 @@ export function LoginForm() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="admin@mitronthane.example"
-          className="w-full rounded-xl border border-white/10 bg-black/60 px-4 py-3 text-sm text-zinc-100 placeholder-zinc-500 outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all"
+          className="w-full rounded-xl border border-white/10 bg-black/60 px-4 py-3 text-sm text-zinc-100 placeholder-zinc-500 outline-none focus:border-[#ff8a3d] focus:ring-1 focus:ring-[#ff8a3d]/40 transition-all"
         />
       </div>
       <div>
@@ -53,7 +53,7 @@ export function LoginForm() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="••••••••"
-          className="w-full rounded-xl border border-white/10 bg-black/60 px-4 py-3 text-sm text-zinc-100 placeholder-zinc-500 outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all"
+          className="w-full rounded-xl border border-white/10 bg-black/60 px-4 py-3 text-sm text-zinc-100 placeholder-zinc-500 outline-none focus:border-[#ff8a3d] focus:ring-1 focus:ring-[#ff8a3d]/40 transition-all"
         />
       </div>
 
@@ -67,7 +67,7 @@ export function LoginForm() {
       <button
         type="submit"
         disabled={isPending}
-        className="gold-gradient-btn w-full rounded-xl py-3.5 text-center text-sm font-bold shadow-lg disabled:opacity-60 transition-all cursor-pointer"
+        className="w-full rounded-xl py-3.5 text-center text-sm font-extrabold text-zinc-950 bg-[linear-gradient(90deg,#ff6830_0%,#ef3b50_55%,#db2777_100%)] shadow-[0_8px_24px_rgba(239,59,80,0.35)] hover:brightness-105 active:scale-[0.98] disabled:opacity-60 transition-all cursor-pointer"
       >
         {isPending ? (
           <span className="flex items-center justify-center gap-2">

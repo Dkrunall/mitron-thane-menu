@@ -75,90 +75,103 @@ export function MenuItemForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3">
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
         <div>
-          <label className="mb-1 block text-xs font-medium text-muted">Name</label>
+          <label className="mb-1.5 block text-xs font-semibold text-zinc-300">Name</label>
           <input
             required
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full rounded-lg border border-card-border bg-background px-3 py-1.5 text-sm outline-none focus:border-accent"
+            placeholder="Item name"
+            className="w-full rounded-xl border border-white/10 bg-black/60 px-3.5 py-2 text-sm text-zinc-100 placeholder-zinc-500 outline-none focus:border-[#ff8a3d] focus:ring-1 focus:ring-[#ff8a3d]/40 transition-all"
           />
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium text-muted">Image URL</label>
+          <label className="mb-1.5 block text-xs font-semibold text-zinc-300">Image URL</label>
           <input
             value={imageUrl}
             onChange={(e) => setImageUrl(e.target.value)}
-            className="w-full rounded-lg border border-card-border bg-background px-3 py-1.5 text-sm outline-none focus:border-accent"
+            placeholder="https://..."
+            className="w-full rounded-xl border border-white/10 bg-black/60 px-3.5 py-2 text-sm text-zinc-100 placeholder-zinc-500 outline-none focus:border-[#ff8a3d] focus:ring-1 focus:ring-[#ff8a3d]/40 transition-all"
           />
         </div>
       </div>
 
       <div>
-        <label className="mb-1 block text-xs font-medium text-muted">Description</label>
+        <label className="mb-1.5 block text-xs font-semibold text-zinc-300">Description</label>
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           rows={2}
-          className="w-full resize-none rounded-lg border border-card-border bg-background px-3 py-1.5 text-sm outline-none focus:border-accent"
+          placeholder="Brief description of flavors, ingredients..."
+          className="w-full resize-none rounded-xl border border-white/10 bg-black/60 px-3.5 py-2 text-sm text-zinc-100 placeholder-zinc-500 outline-none focus:border-[#ff8a3d] focus:ring-1 focus:ring-[#ff8a3d]/40 transition-all"
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-4">
         <div>
-          <label className="mb-1 block text-xs font-medium text-muted">Price</label>
+          <label className="mb-1.5 block text-xs font-semibold text-zinc-300">Price (₹)</label>
           <input
             type="number"
             min={0}
             step="0.01"
             value={price}
             onChange={(e) => setPrice(Number(e.target.value))}
-            className="w-full rounded-lg border border-card-border bg-background px-3 py-1.5 text-sm outline-none focus:border-accent"
+            className="w-full rounded-xl border border-white/10 bg-black/60 px-3.5 py-2 text-sm text-zinc-100 outline-none focus:border-[#ff8a3d] focus:ring-1 focus:ring-[#ff8a3d]/40 transition-all"
           />
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium text-muted">Dietary</label>
+          <label className="mb-1.5 block text-xs font-semibold text-zinc-300">Dietary</label>
           <select
             value={dietaryType}
             onChange={(e) => setDietaryType(e.target.value as DietaryType | '')}
-            className="w-full rounded-lg border border-card-border bg-background px-3 py-1.5 text-sm outline-none focus:border-accent"
+            className="w-full rounded-xl border border-white/10 bg-[#121215] px-3.5 py-2 text-sm text-zinc-100 outline-none focus:border-[#ff8a3d] focus:ring-1 focus:ring-[#ff8a3d]/40 transition-all cursor-pointer"
           >
             {DIETARY_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>
+              <option key={o.value} value={o.value} className="bg-[#121215] text-zinc-100">
                 {o.label}
               </option>
             ))}
           </select>
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium text-muted">Sort order</label>
+          <label className="mb-1.5 block text-xs font-semibold text-zinc-300">Sort order</label>
           <input
             type="number"
             value={sortOrder}
             onChange={(e) => setSortOrder(Number(e.target.value))}
-            className="w-full rounded-lg border border-card-border bg-background px-3 py-1.5 text-sm outline-none focus:border-accent"
+            className="w-full rounded-xl border border-white/10 bg-black/60 px-3.5 py-2 text-sm text-zinc-100 outline-none focus:border-[#ff8a3d] focus:ring-1 focus:ring-[#ff8a3d]/40 transition-all"
           />
         </div>
-        <div className="flex flex-col justify-end gap-1 pb-1.5">
-          <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={isAlcoholic} onChange={(e) => setIsAlcoholic(e.target.checked)} />
+        <div className="flex flex-col justify-end gap-2 pb-1">
+          <label className="flex items-center gap-2 text-xs font-bold text-zinc-200 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={isAlcoholic}
+              onChange={(e) => setIsAlcoholic(e.target.checked)}
+              className="accent-[#ff8a3d] h-4 w-4 rounded cursor-pointer"
+            />
             Alcoholic
           </label>
-          <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={isAvailable} onChange={(e) => setIsAvailable(e.target.checked)} />
+          <label className="flex items-center gap-2 text-xs font-bold text-zinc-200 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={isAvailable}
+              onChange={(e) => setIsAvailable(e.target.checked)}
+              className="accent-[#ff8a3d] h-4 w-4 rounded cursor-pointer"
+            />
             Available
           </label>
         </div>
       </div>
 
-      <div>
-        <div className="mb-1 flex items-center justify-between">
-          <label className="block text-xs font-medium text-muted">
+      <div className="rounded-xl border border-white/5 bg-black/30 p-3">
+        <div className="mb-2 flex items-center justify-between">
+          <label className="block text-xs font-bold text-zinc-300">
             Serving-size variants (optional — e.g. Peg / Bottle)
           </label>
-          <button type="button" onClick={addVariant} className="text-xs font-semibold text-accent">
+          <button type="button" onClick={addVariant} className="text-xs font-bold text-[#ff8a3d] hover:underline cursor-pointer">
             + Add variant
           </button>
         </div>
@@ -170,7 +183,7 @@ export function MenuItemForm({
                   placeholder="Label, e.g. Peg"
                   value={v.label}
                   onChange={(e) => updateVariant(i, { label: e.target.value })}
-                  className="flex-1 rounded-lg border border-card-border bg-background px-3 py-1.5 text-sm outline-none focus:border-accent"
+                  className="flex-1 rounded-xl border border-white/10 bg-black/60 px-3 py-1.5 text-xs sm:text-sm text-zinc-100 placeholder-zinc-500 outline-none focus:border-[#ff8a3d]"
                 />
                 <input
                   type="number"
@@ -179,9 +192,9 @@ export function MenuItemForm({
                   placeholder="Price"
                   value={v.price}
                   onChange={(e) => updateVariant(i, { price: Number(e.target.value) })}
-                  className="w-28 rounded-lg border border-card-border bg-background px-3 py-1.5 text-sm outline-none focus:border-accent"
+                  className="w-28 rounded-xl border border-white/10 bg-black/60 px-3 py-1.5 text-xs sm:text-sm text-zinc-100 outline-none focus:border-[#ff8a3d]"
                 />
-                <button type="button" onClick={() => removeVariant(i)} className="text-muted">
+                <button type="button" onClick={() => removeVariant(i)} className="text-zinc-400 hover:text-rose-400 cursor-pointer p-1">
                   <CloseIcon className="h-3.5 w-3.5" />
                 </button>
               </div>
@@ -190,18 +203,26 @@ export function MenuItemForm({
         ) : null}
       </div>
 
-      {error ? <p className="text-sm text-red-700 dark:text-red-400">{error}</p> : null}
+      {error ? (
+        <div className="rounded-xl border border-rose-500/30 bg-rose-950/40 p-3 text-xs font-medium text-rose-300">
+          {error}
+        </div>
+      ) : null}
 
-      <div className="flex gap-2">
+      <div className="flex items-center gap-2 pt-1">
         <button
           type="submit"
           disabled={isPending}
-          className="rounded-full bg-accent px-4 py-1.5 text-sm font-semibold text-accent-foreground disabled:opacity-60"
+          className="gold-gradient-btn rounded-xl px-4 py-2 text-xs font-bold shadow-md hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 transition-all cursor-pointer"
         >
-          {isPending ? 'Saving…' : itemId ? 'Save item' : 'Add item'}
+          {isPending ? 'Saving…' : itemId ? 'Save Changes' : '+ Add Item'}
         </button>
         {onCancel ? (
-          <button type="button" onClick={onCancel} className="rounded-full border border-card-border px-4 py-1.5 text-sm font-semibold">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="rounded-xl border border-white/10 bg-white/[0.06] hover:bg-white/10 px-4 py-2 text-xs font-semibold text-zinc-300 hover:text-white transition-all cursor-pointer"
+          >
             Cancel
           </button>
         ) : null}

@@ -7,11 +7,11 @@ export default async function AdminTablesPage() {
   const tables = await getAllTables();
 
   return (
-    <div className="space-y-4">
-      <div>
-        <h1 className="text-xl font-bold">Tables &amp; QR codes</h1>
-        <p className="text-sm text-muted">
-          Each QR code links to <code>/order?table=N</code> on whichever domain you&rsquo;re viewing this page from.
+    <div className="space-y-6">
+      <div className="border-b border-white/10 pb-5">
+        <h1 className="display text-3xl sm:text-4xl tracking-tight text-white">Tables &amp; QR Codes</h1>
+        <p className="text-xs sm:text-sm text-zinc-400 font-medium mt-0.5">
+          Manage physical dining tables and export print-ready QR codes for table ordering
         </p>
       </div>
       <TablesManager tables={tables} />

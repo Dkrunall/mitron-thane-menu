@@ -43,50 +43,55 @@ export function CategoryForm({
   return (
     <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3">
       <div>
-        <label className="mb-1 block text-xs font-medium text-muted">Category name</label>
+        <label className="mb-1.5 block text-xs font-semibold text-zinc-300">Category name</label>
         <input
           required
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="rounded-lg border border-card-border bg-background px-3 py-1.5 text-sm outline-none focus:border-accent"
+          placeholder="e.g. Small Plates"
+          className="rounded-xl border border-white/10 bg-black/60 px-3.5 py-2 text-sm text-zinc-100 placeholder-zinc-500 outline-none focus:border-[#ff8a3d] focus:ring-1 focus:ring-[#ff8a3d]/40 transition-all"
         />
       </div>
       <div>
-        <label className="mb-1 block text-xs font-medium text-muted">Section</label>
+        <label className="mb-1.5 block text-xs font-semibold text-zinc-300">Section</label>
         <input
           required
           value={section}
           onChange={(e) => setSection(e.target.value)}
-          placeholder="e.g. Food, Bar, Barista"
-          className="rounded-lg border border-card-border bg-background px-3 py-1.5 text-sm outline-none focus:border-accent"
+          placeholder="Food, Bar, Barista"
+          className="rounded-xl border border-white/10 bg-black/60 px-3.5 py-2 text-sm text-zinc-100 placeholder-zinc-500 outline-none focus:border-[#ff8a3d] focus:ring-1 focus:ring-[#ff8a3d]/40 transition-all"
         />
       </div>
       <div>
-        <label className="mb-1 block text-xs font-medium text-muted">Sort order</label>
+        <label className="mb-1.5 block text-xs font-semibold text-zinc-300">Sort order</label>
         <input
           type="number"
           value={sortOrder}
           onChange={(e) => setSortOrder(Number(e.target.value))}
-          className="w-20 rounded-lg border border-card-border bg-background px-3 py-1.5 text-sm outline-none focus:border-accent"
+          className="w-24 rounded-xl border border-white/10 bg-black/60 px-3.5 py-2 text-sm text-zinc-100 outline-none focus:border-[#ff8a3d] focus:ring-1 focus:ring-[#ff8a3d]/40 transition-all"
         />
       </div>
-      <div className="min-w-[220px] flex-1">
-        <label className="mb-1 block text-xs font-medium text-muted">Image URL (shown on category cards)</label>
+      <div className="min-w-[240px] flex-1">
+        <label className="mb-1.5 block text-xs font-semibold text-zinc-300">Image URL (card cover)</label>
         <input
           value={imageUrl}
           onChange={(e) => setImageUrl(e.target.value)}
           placeholder="https://..."
-          className="w-full rounded-lg border border-card-border bg-background px-3 py-1.5 text-sm outline-none focus:border-accent"
+          className="w-full rounded-xl border border-white/10 bg-black/60 px-3.5 py-2 text-sm text-zinc-100 placeholder-zinc-500 outline-none focus:border-[#ff8a3d] focus:ring-1 focus:ring-[#ff8a3d]/40 transition-all"
         />
       </div>
       <button
         type="submit"
         disabled={isPending}
-        className="rounded-full bg-accent px-4 py-1.5 text-sm font-semibold text-accent-foreground disabled:opacity-60"
+        className="gold-gradient-btn rounded-xl px-4 py-2.5 text-xs font-bold shadow-md hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 transition-all cursor-pointer"
       >
-        {isPending ? 'Saving…' : categoryId ? 'Save' : 'Add category'}
+        {isPending ? 'Saving…' : categoryId ? 'Save Category' : '+ Add Category'}
       </button>
-      {error ? <p className="w-full text-sm text-red-700 dark:text-red-400">{error}</p> : null}
+      {error ? (
+        <div className="w-full rounded-xl border border-rose-500/30 bg-rose-950/40 p-3 text-xs font-medium text-rose-300">
+          {error}
+        </div>
+      ) : null}
     </form>
   );
 }

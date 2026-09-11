@@ -37,9 +37,9 @@ function timeAgo(iso: string): string {
 
 const STATUS_STYLE: Record<string, string> = {
   placed: 'border-rose-500/40 bg-rose-500/10 text-rose-300',
-  preparing: 'border-amber-500/40 bg-amber-500/10 text-amber-300',
+  preparing: 'border-[#ff6830]/50 bg-[#ff6830]/15 text-[#ff8a3d]',
   ready: 'border-emerald-500/40 bg-emerald-500/10 text-emerald-300',
-  served: 'border-white/10 bg-zinc-900 text-zinc-500',
+  served: 'border-white/10 bg-zinc-900 text-zinc-400',
 };
 
 /** Per-item advance control — lets staff move one dish/drink forward
@@ -120,7 +120,7 @@ function OrderCard({ order, soundOn }: { order: AdminOrder; soundOn: boolean }) 
   return (
     <div
       className={`overflow-hidden rounded-2xl border p-4 transition-all shadow-lg ${isStale
-          ? 'border-rose-500/80 bg-rose-950/20 ring-2 ring-rose-500/40 animate-pulse'
+          ? 'border-rose-500/80 bg-rose-950/30 ring-2 ring-rose-500/40 animate-pulse'
           : 'border-white/10 bg-[#121215] hover:border-white/20'
         }`}
     >
@@ -143,15 +143,15 @@ function OrderCard({ order, soundOn }: { order: AdminOrder; soundOn: boolean }) 
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
                 <span className="font-bold text-zinc-100">
-                  <span className="text-amber-400 font-extrabold">{item.quantity}×</span> {item.menuItemName}
+                  <span className="text-[#ff8a3d] font-extrabold">{item.quantity}×</span> {item.menuItemName}
                 </span>
                 {item.variantLabel ? (
-                  <span className="ml-1.5 rounded-md bg-zinc-800 px-1.5 py-0.5 text-[10px] font-medium text-zinc-300">
+                  <span className="ml-1.5 rounded-md bg-zinc-800/80 px-1.5 py-0.5 text-[10px] font-medium text-zinc-300">
                     {item.variantLabel}
                   </span>
                 ) : null}
                 {item.notes ? (
-                  <p className="mt-1 text-[11px] italic text-amber-200/90 font-medium">
+                  <p className="mt-1 text-[11px] italic text-[#f37540]/90 font-medium">
                     &ldquo;{item.notes}&rdquo;
                   </p>
                 ) : null}
@@ -164,7 +164,7 @@ function OrderCard({ order, soundOn }: { order: AdminOrder; soundOn: boolean }) 
 
       <div className="flex items-center justify-between">
         <span className="text-xs font-bold text-zinc-100">
-          Total: <strong className="text-amber-400">{formatPrice(total)}</strong>
+          Total: <strong className="text-[#f97316] font-extrabold">{formatPrice(total)}</strong>
         </span>
         {nextStatus ? (
           <button
@@ -202,9 +202,9 @@ function ServiceRequestCard({ request, onAcknowledge }: { request: ServiceReques
   }
 
   return (
-    <div className="flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-[#121215] px-4 py-3 shadow-md">
+    <div className="flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-[#121215] px-4 py-3 shadow-md hover:border-white/20 transition-colors">
       <div className="flex items-center gap-3">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#ff6830]/15 text-[#ff8a3d] border border-[#ff6830]/30 shadow-[0_0_12px_rgba(230,64,26,0.15)]">
           <Icon className="h-4.5 w-4.5" />
         </span>
         <div>
@@ -252,8 +252,8 @@ function AlertsControl({ soundOn, onToggleSound }: { soundOn: boolean; onToggleS
           onToggleSound(!soundOn);
         }}
         className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 transition-all ${soundOn
-            ? 'border-amber-500/40 bg-amber-500/10 text-amber-300'
-            : 'border-amber-900/30 bg-black/30 text-amber-200/40'
+            ? 'border-[#ff6830]/50 bg-[#ff6830]/15 text-[#ff8a3d] shadow-[0_0_12px_rgba(230,64,26,0.15)]'
+            : 'border-white/10 bg-black/40 text-zinc-400 hover:text-zinc-200'
           }`}
       >
         {soundOn ? <BellIcon className="h-3.5 w-3.5" /> : <BellOffIcon className="h-3.5 w-3.5" />}
@@ -264,13 +264,13 @@ function AlertsControl({ soundOn, onToggleSound }: { soundOn: boolean; onToggleS
         <button
           type="button"
           onClick={handleEnableNotifications}
-          className="rounded-xl border border-amber-500/30 bg-black/40 px-3 py-1.5 text-amber-300 hover:bg-amber-500/10 transition-colors"
+          className="rounded-xl border border-white/10 bg-white/[0.05] hover:bg-white/10 px-3 py-1.5 text-zinc-200 hover:text-white transition-colors"
         >
           Enable Desktop Alerts
         </button>
       ) : null}
       {permission === 'denied' ? (
-        <span className="text-[11px] text-amber-200/50">Desktop notifications blocked in browser</span>
+        <span className="text-[11px] text-zinc-500">Desktop notifications blocked in browser</span>
       ) : null}
     </div>
   );
@@ -398,33 +398,36 @@ export function AdminOrdersDashboard({
       <div className="space-y-4 border-b border-white/10 pb-5">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-zinc-100">Live Orders</h1>
-            <p className="text-xs sm:text-sm text-zinc-400">Real-time table orders from dining area</p>
+            <h1 className="display text-3xl sm:text-4xl tracking-tight text-white">Live Orders</h1>
+            <p className="text-xs sm:text-sm text-zinc-400 font-medium">Real-time table orders from dining area</p>
           </div>
           <AlertsControl soundOn={soundOn} onToggleSound={setSoundOn} />
         </div>
 
         {groups.length > 0 ? (
           <div className="flex flex-wrap items-center gap-2">
-            <span className="flex items-center gap-1.5 rounded-xl border border-amber-400/30 bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-300">
-              <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
+            <span className="glass-pill flex items-center gap-1.5 rounded-full border border-[#ff6830]/40 bg-[#ff6830]/10 px-3 py-1 text-xs font-bold text-[#ff8a3d]">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#ff8a3d] shadow-[0_0_6px_#ff8a3d]" />
               {groups.length} table{groups.length === 1 ? '' : 's'} active
             </span>
-            <span className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-zinc-900 px-3 py-1 text-xs font-semibold text-zinc-300">
+            <span className="glass-pill flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-xs font-semibold text-zinc-300">
               {orders.length} order{orders.length === 1 ? '' : 's'} in progress
             </span>
             {placedCount > 0 ? (
-              <span className="flex items-center gap-1.5 rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 py-1 text-xs font-semibold text-rose-300">
+              <span className="glass-pill flex items-center gap-1.5 rounded-full border border-rose-500/40 bg-rose-500/10 px-3 py-1 text-xs font-bold text-rose-300">
+                <span className="h-1.5 w-1.5 rounded-full bg-rose-400 shadow-[0_0_6px_#f43f5e]" />
                 {placedCount} awaiting kitchen
               </span>
             ) : null}
             {readyCount > 0 ? (
-              <span className="flex items-center gap-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-300">
+              <span className="glass-pill flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-300">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#10b981]" />
                 {readyCount} ready to serve
               </span>
             ) : null}
             {serviceRequests.length > 0 ? (
-              <span className="flex items-center gap-1.5 rounded-xl border border-sky-500/30 bg-sky-500/10 px-3 py-1 text-xs font-semibold text-sky-300">
+              <span className="glass-pill flex items-center gap-1.5 rounded-full border border-sky-500/40 bg-sky-500/10 px-3 py-1 text-xs font-bold text-sky-300">
+                <span className="h-1.5 w-1.5 rounded-full bg-sky-400 shadow-[0_0_6px_#38bdf8]" />
                 {serviceRequests.length} request{serviceRequests.length === 1 ? '' : 's'}
               </span>
             ) : null}
@@ -434,7 +437,7 @@ export function AdminOrdersDashboard({
 
       {serviceRequests.length > 0 ? (
         <div className="space-y-3">
-          <h2 className="text-xs font-bold tracking-widest text-zinc-400 uppercase">Table Service Requests</h2>
+          <h2 className="text-xs font-bold tracking-widest text-[#ff8a3d] uppercase">Table Service Requests</h2>
           <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
             {serviceRequests.map((request) => (
               <ServiceRequestCard key={request.id} request={request} onAcknowledge={handleAcknowledgeRequest} />
@@ -444,11 +447,13 @@ export function AdminOrdersDashboard({
       ) : null}
 
       {groups.length === 0 ? (
-        <div className="mx-auto my-12 flex max-w-md flex-col items-center gap-3 rounded-2xl p-10 text-center border border-white/10 bg-[#121215]">
-          <BellIcon className="h-9 w-9 text-zinc-600" />
-          <h2 className="text-base font-bold text-zinc-200">No Active Orders</h2>
-          <p className="text-xs text-zinc-400">
-            Incoming table orders will appear here automatically with live alerts.
+        <div className="mx-auto my-12 flex max-w-md flex-col items-center gap-3 rounded-3xl p-10 text-center border border-white/10 bg-[#121215] shadow-2xl">
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/[0.04] border border-white/10 text-zinc-500 shadow-inner">
+            <BellIcon className="h-8 w-8" />
+          </div>
+          <h2 className="text-lg font-bold text-zinc-100">No Active Orders</h2>
+          <p className="text-xs text-zinc-400 max-w-xs leading-relaxed">
+            Incoming table orders will appear here automatically with live alerts and real-time status syncing.
           </p>
         </div>
       ) : (
@@ -457,15 +462,15 @@ export function AdminOrdersDashboard({
             const totalOrders = group.sittings.reduce((n, s) => n + s.length, 0);
             const hasMultipleSittings = group.sittings.length > 1;
             return (
-              <div key={group.tableNumber} className="rounded-2xl border border-white/10 bg-[#121215] p-4 space-y-3 shadow-xl transition-colors hover:border-white/20">
+              <div key={group.tableNumber} className="rounded-2xl border border-white/10 bg-[#121215] p-4 space-y-3 shadow-xl transition-all duration-200 hover:border-[#ff6830]/30 hover:bg-[#141418]">
                 <div className="flex items-center justify-between border-b border-white/5 pb-3">
-                  <div className="flex items-center gap-2">
-                    <span className="h-2 w-2 rounded-full bg-amber-400" />
-                    <h2 className="text-base font-bold text-zinc-100">
-                      Table {group.tableNumber}
+                  <div className="flex items-center gap-2.5">
+                    <span className="h-2 w-2 rounded-full bg-[#ff8a3d] shadow-[0_0_8px_#ff8a3d]" />
+                    <h2 className="display text-xl tracking-tight text-white">
+                      Table {group.tableNumber < 10 ? `0${group.tableNumber}` : group.tableNumber}
                     </h2>
                   </div>
-                  <span className="rounded-lg border border-white/10 bg-zinc-900 px-2.5 py-0.5 text-xs font-semibold text-zinc-300">
+                  <span className="glass-pill rounded-full border border-white/10 px-2.5 py-0.5 text-xs font-bold text-zinc-300">
                     {totalOrders} order{totalOrders === 1 ? '' : 's'}
                   </span>
                 </div>
@@ -476,7 +481,7 @@ export function AdminOrdersDashboard({
                       {hasMultipleSittings ? (
                         <div className="flex items-center gap-2">
                           <span className="h-px flex-1 bg-white/5" />
-                          <span className="rounded-md border border-sky-500/30 bg-sky-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-sky-300">
+                          <span className="rounded-full border border-sky-500/40 bg-sky-500/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-sky-300">
                             Sitting {i + 1}
                           </span>
                           <span className="h-px flex-1 bg-white/5" />

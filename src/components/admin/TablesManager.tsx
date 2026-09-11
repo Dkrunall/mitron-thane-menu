@@ -48,7 +48,7 @@ export function TablesManager({ tables }: { tables: AdminTable[] }) {
               max={500}
               value={count}
               onChange={(e) => setCount(Number(e.target.value))}
-              className="w-28 rounded-xl border border-white/10 bg-black/60 px-3.5 py-2 text-sm font-bold text-zinc-100 outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all"
+              className="w-28 rounded-xl border border-white/10 bg-black/60 px-3.5 py-2 text-sm font-bold text-zinc-100 outline-none focus:border-[#ff8a3d] focus:ring-1 focus:ring-[#ff8a3d]/40 transition-all"
             />
           </div>
           <button
@@ -64,9 +64,9 @@ export function TablesManager({ tables }: { tables: AdminTable[] }) {
           type="button"
           onClick={handleExportPdf}
           disabled={isExportingPdf || tables.every((t) => !t.isActive)}
-          className="flex items-center gap-2 rounded-xl border border-white/10 bg-zinc-900 px-4 py-2.5 text-xs font-bold text-zinc-200 hover:bg-zinc-800 active:scale-[0.98] disabled:opacity-60 transition-all shadow-sm cursor-pointer"
+          className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.06] hover:bg-white/10 px-4 py-2.5 text-xs font-bold text-zinc-200 hover:text-white active:scale-[0.98] disabled:opacity-60 transition-all shadow-sm cursor-pointer"
         >
-          {isExportingPdf ? null : <DocumentIcon className="h-3.5 w-3.5 text-amber-400" />}
+          {isExportingPdf ? null : <DocumentIcon className="h-4 w-4 text-[#ff8a3d]" />}
           {isExportingPdf ? 'Generating PDF Document...' : 'Download Print PDF (Active QRs)'}
         </button>
       </div>
@@ -79,9 +79,11 @@ export function TablesManager({ tables }: { tables: AdminTable[] }) {
       ) : null}
 
       {tables.length === 0 ? (
-        <div className="mx-auto my-12 flex max-w-md flex-col items-center gap-3 rounded-2xl p-10 text-center border border-white/10 bg-[#121215]">
-          <TableIcon className="h-9 w-9 text-zinc-600" />
-          <h2 className="text-base font-bold text-zinc-200">No Tables Configured</h2>
+        <div className="mx-auto my-12 flex max-w-md flex-col items-center gap-3 rounded-3xl p-10 text-center border border-white/10 bg-[#121215] shadow-2xl">
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/[0.04] border border-white/10 text-zinc-500 shadow-inner">
+            <TableIcon className="h-8 w-8" />
+          </div>
+          <h2 className="text-lg font-bold text-zinc-100">No Tables Configured</h2>
           <p className="text-xs text-zinc-400">Generate dining tables above to create table QR codes.</p>
         </div>
       ) : (

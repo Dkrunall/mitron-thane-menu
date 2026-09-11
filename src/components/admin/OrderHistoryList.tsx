@@ -71,13 +71,20 @@ export function OrderHistoryList({
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-amber-200/60">
-        {orders.length} order{orders.length === 1 ? '' : 's'} · {formatPrice(totalRevenue)} total
-      </p>
+      <div className="flex items-center gap-2">
+        <span className="glass-pill rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-xs font-semibold text-zinc-300">
+          {orders.length} order{orders.length === 1 ? '' : 's'}
+        </span>
+        <span className="glass-pill rounded-full border border-[#ff6830]/40 bg-[#ff6830]/10 px-3 py-1 text-xs font-bold text-[#ff8a3d]">
+          {formatPrice(totalRevenue)} total revenue
+        </span>
+      </div>
 
-      <div className="space-y-2">
+      <div className="space-y-2.5">
         {orders.length === 0 ? (
-          <p className="py-8 text-center text-sm text-amber-200/50">No orders found for these filters.</p>
+          <div className="rounded-2xl border border-white/10 bg-[#121215] p-8 text-center shadow-lg">
+            <p className="text-sm font-medium text-zinc-400">No orders found for these filters.</p>
+          </div>
         ) : (
           orders.map((order) => (
             <OrderHistoryRow
