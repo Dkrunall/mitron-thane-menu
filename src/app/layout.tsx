@@ -1,19 +1,30 @@
 import type { Metadata, Viewport } from "next";
-import { Plus_Jakarta_Sans, Outfit } from "next/font/google";
+import { Sora, Bebas_Neue } from "next/font/google";
 import { RegisterServiceWorker } from "@/components/RegisterServiceWorker";
 import "./globals.css";
 
-const plusJakarta = Plus_Jakarta_Sans({
+// "Neon Rooftop" type system: Sora for body copy and UI chrome (replaces
+// Plus Jakarta Sans), Bebas Neue as the bold condensed display face used
+// via the .display class for hero wordmarks and screen titles (replaces
+// Outfit as --font-heading, which still backs h1-h6 weight/leading).
+const sora = Sora({
   variable: "--font-sans",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800"],
   display: "swap",
 });
 
-const outfit = Outfit({
+const soraHeading = Sora({
   variable: "--font-heading",
   subsets: ["latin"],
-  weight: ["500", "600", "700", "800", "900"],
+  weight: ["600", "700", "800"],
+  display: "swap",
+});
+
+const bebasNeue = Bebas_Neue({
+  variable: "--font-display",
+  subsets: ["latin"],
+  weight: ["400"],
   display: "swap",
 });
 
@@ -45,7 +56,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${plusJakarta.variable} ${outfit.variable} h-full antialiased font-sans`}
+      className={`${sora.variable} ${soraHeading.variable} ${bebasNeue.variable} h-full antialiased font-sans`}
     >
       <body className="min-h-full flex flex-col font-sans selection:bg-amber-500 selection:text-black">
         <RegisterServiceWorker />

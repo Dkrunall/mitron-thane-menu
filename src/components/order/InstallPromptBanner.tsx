@@ -33,7 +33,7 @@ export function InstallPromptBanner() {
     <div className="flex items-center gap-2.5 rounded-2xl border border-amber-400/30 bg-[#14110e]/95 px-4 py-2.5 text-xs text-amber-100/90 shadow-lg backdrop-blur-xl">
       <span className="shrink-0 text-base">📲</span>
       <p className="flex-1 leading-snug">
-        Add OPA to your home screen: tap <span className="font-bold text-amber-200">Share</span> then{' '}
+        Add Mitron Thane to your home screen: tap <span className="font-bold text-amber-200">Share</span> then{' '}
         <span className="font-bold text-amber-200">Add to Home Screen</span>.
       </p>
       <button

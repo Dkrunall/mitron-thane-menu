@@ -68,7 +68,7 @@ export function MainCategoryCards({
             key={section.section}
             type="button"
             onClick={() => onSelect(section.section)}
-            className="group relative h-56 sm:h-60 w-36 sm:w-40 shrink-0 snap-start overflow-hidden rounded-2xl border border-white/10 bg-[#121215] shadow-xl transition-all duration-300 hover:border-amber-400/50 hover:shadow-amber-500/20 active:scale-[0.97] cursor-pointer"
+            className="group relative h-56 sm:h-60 w-36 sm:w-40 shrink-0 snap-start overflow-hidden rounded-2xl border border-white/10 bg-[#121215] shadow-xl transition-all duration-300 hover:border-transparent hover:shadow-[0_0_28px_-4px_rgba(230,64,26,0.55)] active:scale-[0.97] cursor-pointer"
           >
             {image ? (
               <Image
@@ -84,12 +84,13 @@ export function MainCategoryCards({
               </div>
             )}
 
-            {/* Dark minimal vignette overlay */}
+            {/* Dark vignette + coral/pink glow overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/30 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#e6401a]/0 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-hover:from-[#e6401a]/25" />
 
-            {/* Minimal label overlay */}
+            {/* Label overlay */}
             <div className="relative z-10 flex h-full flex-col justify-end p-3 text-left">
-              <h3 className="truncate text-sm sm:text-base font-bold text-zinc-100 group-hover:text-amber-300 transition-colors">
+              <h3 className="display truncate text-lg text-zinc-100 group-hover:text-[var(--mitron-flame)] transition-colors">
                 {section.section}
               </h3>
               <p className="flex items-center gap-1 text-[11px] font-semibold text-zinc-400 group-hover:text-amber-400/90 transition-colors">

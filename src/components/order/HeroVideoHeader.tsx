@@ -11,21 +11,21 @@ export function HeroVideoHeader({
   children?: React.ReactNode;
 }) {
   return (
-    <div className="relative w-full bg-[#0d0b09] text-white pb-10 mb-2">
+    <div className="relative w-full bg-[#09090b] text-white pb-9 mb-2">
       {/* Background image container */}
-      <div className="relative h-[62vh] min-h-[440px] w-full overflow-hidden rounded-b-[38px] sm:rounded-b-[48px] border-b border-amber-400/25 shadow-2xl">
+      <div className="relative h-[46vh] min-h-[320px] w-full overflow-hidden rounded-b-[38px] border-b border-white/10 shadow-2xl sm:rounded-b-[48px]">
         <Image
           src="/mitron-hero.jpg"
           alt=""
           fill
           sizes="100vw"
-          className="object-cover opacity-80"
+          className="object-cover"
           priority
         />
 
-        {/* Dark luxury overlay vignette with amber ambient glow */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0d0b09] via-black/40 to-black/70" />
-        <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full bg-amber-500/15 blur-[120px]" />
+        {/* Dark vignette + glow, matching the Neon Rooftop landing hero */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-[#09090b]" />
+        <div className="pointer-events-none absolute -left-8 top-16 h-44 w-44 rounded-full bg-[radial-gradient(circle,rgba(233,1,151,0.32),transparent_70%)] blur-md" />
       </div>
 
       {/* Floating top bar pinned to viewport */}
@@ -35,14 +35,14 @@ export function HeroVideoHeader({
         </div>
       ) : null}
 
-      {/* Logo positioned with clean minimal border and gold glow */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 translate-y-1/2 z-30">
-        <div className="relative h-20 w-20 sm:h-24 sm:w-24 overflow-hidden rounded-full border-[3px] border-amber-400/80 bg-[#0d0b09] shadow-2xl gold-glow transition-transform duration-500 hover:scale-105">
+      {/* Logo positioned with a coral glow ring, floating over the seam */}
+      <div className="animate-float-y absolute bottom-5 left-1/2 -translate-x-1/2 translate-y-1/2 z-30">
+        <div className="relative h-18 w-18 overflow-hidden rounded-full shadow-[0_0_0_3px_rgba(230,64,26,0.7),0_12px_34px_rgba(230,64,26,0.35)] sm:h-20 sm:w-20">
           <Image
             src="/mitron-logo.png"
             alt="Mitron Thane logo"
             fill
-            sizes="(min-width: 640px) 96px, 80px"
+            sizes="80px"
             className="object-cover"
             priority
           />

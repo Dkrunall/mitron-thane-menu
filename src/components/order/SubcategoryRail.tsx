@@ -32,10 +32,10 @@ export function SubcategoryRail({
             className="flex shrink-0 flex-col items-center gap-1.5 active:scale-95 transition-transform cursor-pointer"
           >
             <div
-              className={`relative h-14 w-14 sm:h-16 sm:w-16 overflow-hidden rounded-xl border transition-all duration-300 ${
+              className={`relative h-14 w-14 sm:h-16 sm:w-16 overflow-hidden rounded-xl transition-all duration-300 ${
                 isActive
-                  ? 'border-amber-400 bg-zinc-800 shadow-md shadow-amber-500/20 scale-105'
-                  : 'border-white/10 bg-zinc-900/80 opacity-70 hover:opacity-100 hover:border-white/20'
+                  ? 'ring-2 ring-[var(--mitron-flame)] bg-zinc-800 shadow-[0_4px_16px_-3px_rgba(230,64,26,0.55)] scale-105'
+                  : 'border border-white/10 bg-zinc-900/80 opacity-70 hover:opacity-100 hover:border-white/20'
               }`}
             >
               {image ? (

@@ -13,25 +13,27 @@ function CartBar({ tableNumber }: { tableNumber: number }) {
     <div className="fixed inset-x-0 bottom-0 z-30 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pointer-events-none flex justify-center">
       <Link
         href={`/order/cart?table=${tableNumber}`}
-        className="gold-gradient-btn pointer-events-auto w-full max-w-lg flex items-center justify-between gap-3 sm:gap-4 rounded-2xl px-4 sm:px-5 py-3.5 shadow-2xl border border-amber-300/40"
+        className="gold-gradient-btn pointer-events-auto w-full max-w-lg flex items-center justify-between gap-3 sm:gap-4 rounded-2xl px-4 sm:px-5 py-3.5 shadow-[0_14px_32px_-8px_rgba(230,64,26,0.6)]"
       >
         <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-black text-amber-300 text-xs font-extrabold">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/15 text-black text-xs font-black">
             {totalItems}
           </span>
           <div className="flex min-w-0 flex-col text-left">
-            <span className="whitespace-nowrap text-[11px] font-bold uppercase tracking-wider text-black/75">
+            <span className="whitespace-nowrap text-[11px] font-bold uppercase tracking-wider text-black/70">
               Review Cart
             </span>
-            <span className="whitespace-nowrap text-sm sm:text-base font-extrabold text-black tracking-tight">
+            <span className="whitespace-nowrap text-sm sm:text-base font-black text-black tracking-tight">
               {formatPrice(totalPrice)}
             </span>
           </div>
         </div>
 
-        <div className="flex shrink-0 items-center gap-1.5 rounded-xl bg-black px-3.5 py-2 text-xs font-bold text-amber-300 shadow-md">
+        <div className="flex shrink-0 items-center gap-1.5 text-sm font-black text-black">
           <span className="whitespace-nowrap">View Order</span>
-          <span className="text-sm font-bold">→</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M5 12h14M13 6l6 6-6 6" />
+          </svg>
         </div>
       </Link>
     </div>
@@ -63,13 +65,13 @@ export function OrderHeader({
 }) {
   if (title) {
     return (
-      <header className="sticky top-2 z-40 mx-3 my-2 flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-[#121215]/90 px-3.5 sm:px-4 py-2.5 backdrop-blur-2xl shadow-xl">
+      <header className="glass-pill sticky top-2 z-40 mx-3 my-2 flex items-center justify-between gap-3 rounded-2xl px-3.5 sm:px-4 py-2.5 shadow-xl">
         <div className="flex items-center gap-3 min-w-0 flex-1">
           {onBack ? (
             <button
               type="button"
               onClick={onBack}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-zinc-900 text-zinc-200 hover:border-white/20 active:scale-95 transition-all cursor-pointer"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-zinc-200 hover:border-white/20 active:scale-95 transition-all cursor-pointer"
               aria-label="Back"
             >
               <svg className="h-4 w-4 fill-none stroke-current" viewBox="0 0 24 24" strokeWidth="2.5">
@@ -79,7 +81,7 @@ export function OrderHeader({
           ) : backHref ? (
             <Link
               href={backHref}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-zinc-900 text-zinc-200 hover:border-white/20 active:scale-95 transition-all"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-zinc-200 hover:border-white/20 active:scale-95 transition-all"
               aria-label="Back"
             >
               <svg className="h-4 w-4 fill-none stroke-current" viewBox="0 0 24 24" strokeWidth="2.5">
@@ -87,7 +89,7 @@ export function OrderHeader({
               </svg>
             </Link>
           ) : null}
-          <h1 className="min-w-0 flex-1 truncate text-base font-bold text-zinc-100">{title}</h1>
+          <h1 className="display min-w-0 flex-1 truncate text-xl text-zinc-100">{title}</h1>
         </div>
 
         {/* Veg filter inside header */}
@@ -138,7 +140,7 @@ export function OrderHeader({
   }
 
   return (
-    <header className="sticky top-2 z-40 mx-3 my-2 flex items-center justify-between gap-2.5 rounded-2xl border border-white/10 bg-[#121215]/90 px-3.5 sm:px-4 py-2.5 backdrop-blur-2xl shadow-xl">
+    <header className="glass-pill sticky top-2 z-40 mx-3 my-2 flex items-center justify-between gap-2.5 rounded-2xl px-3.5 sm:px-4 py-2.5 shadow-xl">
       {/* Left: Veg Switch */}
       <div className="flex items-center gap-2">
         {onDietFilterChange ? (

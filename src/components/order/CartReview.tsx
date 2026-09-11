@@ -81,7 +81,7 @@ export function CartReview({ tableNumber }: { tableNumber: number }) {
         <div className="space-y-1">
           <h2 className="text-lg sm:text-xl font-black text-amber-50">Your Cart is Empty</h2>
           <p className="text-xs sm:text-sm text-amber-200/80 max-w-xs mx-auto leading-relaxed">
-            Browse our Opa digital menu and add your favorite dishes to place a table order.
+            Browse our digital menu and add your favorite dishes to place a table order.
           </p>
         </div>
         <Link
@@ -103,7 +103,7 @@ export function CartReview({ tableNumber }: { tableNumber: number }) {
             <PlateIcon className="h-5 w-5" />
           </span>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-xs sm:text-sm font-bold text-zinc-100 uppercase tracking-wide">OPA Table Order</p>
+            <p className="truncate text-xs sm:text-sm font-bold text-zinc-100 uppercase tracking-wide">Mitron Table Order</p>
             <p className="truncate text-[11px] sm:text-xs text-zinc-400">Serving directly to Table {tableNumber}</p>
           </div>
         </div>
@@ -168,11 +168,11 @@ export function CartReview({ tableNumber }: { tableNumber: number }) {
               </span>
 
               <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 rounded-xl border border-amber-500/30 bg-black/60 p-1 shadow-inner">
+                <div className="flex items-center gap-2.5 rounded-full border border-white/10 bg-black/60 p-1 shadow-inner">
                   <button
                     type="button"
                     onClick={() => updateQuantity(line.id, line.quantity - 1)}
-                    className="flex h-7 w-7 items-center justify-center rounded-lg text-amber-300 hover:bg-amber-500/20 active:scale-90 text-base font-black transition-all"
+                    className="flex h-7 w-7 items-center justify-center rounded-full bg-white/8 text-zinc-200 hover:bg-white/15 active:scale-90 text-base font-black transition-all"
                     aria-label="Decrease quantity"
                   >
                     −
@@ -181,7 +181,7 @@ export function CartReview({ tableNumber }: { tableNumber: number }) {
                   <button
                     type="button"
                     onClick={() => updateQuantity(line.id, line.quantity + 1)}
-                    className="flex h-7 w-7 items-center justify-center rounded-lg text-amber-300 hover:bg-amber-500/20 active:scale-90 text-base font-black transition-all"
+                    className="flex h-7 w-7 items-center justify-center rounded-full bg-[linear-gradient(135deg,#ff8a3d,#e6401a)] text-black active:scale-90 text-base font-black shadow-[0_4px_14px_-2px_rgba(230,64,26,0.6)] transition-all"
                     aria-label="Increase quantity"
                   >
                     +
@@ -191,7 +191,7 @@ export function CartReview({ tableNumber }: { tableNumber: number }) {
                 <button
                   type="button"
                   onClick={() => removeLine(line.id)}
-                  className="rounded-lg p-1.5 text-amber-400/60 hover:text-rose-400 active:scale-90 transition-colors"
+                  className="rounded-full p-1.5 text-amber-400/60 hover:text-rose-400 active:scale-90 transition-colors"
                   aria-label="Remove item"
                 >
                   <span className="text-sm font-black">✕</span>

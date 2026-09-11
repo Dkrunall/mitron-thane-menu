@@ -16,7 +16,8 @@
   --accent-light: #f37540;
   --accent-foreground: #000000;
   --mitron-pink: #e90197;
-  --gold-gradient: linear-gradient(135deg, #ffa200 0%, #e6401a 55%, #c9330f 100%);
+  --mitron-flame: #ff8a3d;
+  --gold-gradient: linear-gradient(120deg, #ff8a3d 0%, #e6401a 55%, #e90197 130%);
 }
 
 @theme inline {
@@ -29,6 +30,7 @@
   --color-accent-foreground: var(--accent-foreground);
   --font-sans: var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-heading: var(--font-heading), -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: var(--font-display), -apple-system, BlinkMacSystemFont, sans-serif;
 
   /* Overrides Tailwind's built-in amber-* scale so every existing
      amber-* utility class across the app (text-amber-400,
@@ -68,6 +70,17 @@ h6 {
   font-family: var(--font-heading), var(--font-sans);
   letter-spacing: -0.025em;
   font-weight: 700;
+}
+
+/* Bold nightlife display type — Bebas Neue, used for hero wordmarks and
+   screen titles across the redesigned customer ordering flow. Distinct
+   from --font-heading (Sora, used for h1-h6 weight/leading) so a heading
+   can opt in explicitly instead of every h-tag going all-caps condensed. */
+.display {
+  font-family: var(--font-display), var(--font-heading), var(--font-sans);
+  letter-spacing: 0.02em;
+  font-weight: 400;
+  text-transform: uppercase;
 }
 
 /* Hide scrollbar */
@@ -147,7 +160,7 @@ h6 {
 }
 
 .gold-gradient-btn {
-  background: linear-gradient(135deg, #ffa200 0%, #e6401a 55%, #c9330f 100%);
+  background: linear-gradient(120deg, #ff8a3d 0%, #e6401a 55%, #e90197 130%);
   color: #000000;
   font-weight: 800;
   letter-spacing: 0.02em;
@@ -172,4 +185,51 @@ h6 {
 
 .pb-safe {
   padding-bottom: max(1rem, env(safe-area-inset-bottom, 1rem));
+}
+
+/* "Neon Rooftop" motion + glass primitives, shared across the redesigned
+   landing/menu/cart/status screens (see mitron-thane-ordering-redesign
+   mockup — these mirror its .glass / keyframes 1:1). */
+.glass-pill {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+@keyframes float-y {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes bob-y {
+  0%, 100% { transform: translateY(0); opacity: 0.55; }
+  50% { transform: translateY(6px); opacity: 1; }
+}
+
+@keyframes cta-glow {
+  0%, 100% { box-shadow: 0 10px 30px -6px rgba(230, 64, 26, 0.55); }
+  50% { box-shadow: 0 10px 40px -4px rgba(230, 64, 26, 0.8), 0 0 30px -4px rgba(233, 1, 151, 0.5); }
+}
+
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 rgba(230, 64, 26, 0.5); }
+  70% { box-shadow: 0 0 0 16px rgba(230, 64, 26, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(230, 64, 26, 0); }
+}
+
+.animate-float-y {
+  animation: float-y 4.5s ease-in-out infinite;
+}
+
+.animate-bob-y {
+  animation: bob-y 2s ease-in-out infinite;
+}
+
+.animate-cta-glow {
+  animation: cta-glow 3.2s ease-in-out infinite;
+}
+
+.animate-pulse-ring {
+  animation: pulse-ring 2.2s infinite;
 }

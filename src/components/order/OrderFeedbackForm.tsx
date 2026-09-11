@@ -50,7 +50,7 @@ export function OrderFeedbackForm({ orderId }: { orderId: string }) {
           <CheckIcon className="h-5 w-5" />
         </span>
         <p className="text-sm font-black text-emerald-300">Thanks for the feedback!</p>
-        <p className="text-xs text-amber-200/60">It helps us make Opa! even better.</p>
+        <p className="text-xs text-amber-200/60">It helps us make Mitron Thane even better.</p>
       </div>
     );
   }
@@ -76,7 +76,7 @@ export function OrderFeedbackForm({ orderId }: { orderId: string }) {
     <div className="space-y-4 rounded-3xl border border-amber-500/25 bg-[#161310] p-5 shadow-xl">
       <div className="text-center space-y-1">
         <h3 className="text-sm font-black text-amber-50">How was your experience?</h3>
-        <p className="text-xs text-amber-200/60">Rate your order at Opa! Bar &amp; Cafe</p>
+        <p className="text-xs text-amber-200/60">Rate your order at Mitron Thane</p>
       </div>
 
       <StarPicker value={rating} onChange={setRating} />

@@ -46,17 +46,17 @@ function StatusStepper({ status }: { status: OrderStatus }) {
         return (
           <div key={step.status} className="flex flex-1 flex-col items-center">
             <div className="flex w-full items-center">
-              <div className={`h-[2px] flex-1 ${i === 0 ? 'invisible' : done ? 'bg-amber-400' : 'bg-zinc-800'}`} />
+              <div className={`h-[2px] flex-1 ${i === 0 ? 'invisible' : done ? 'bg-[linear-gradient(90deg,#ff8a3d,#e6401a,#e90197)]' : 'bg-zinc-800'}`} />
               <div
-                className={`relative flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl border transition-all ${
+                className={`relative flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-full transition-all ${
                   done
-                    ? 'border-amber-400 bg-amber-400 text-black font-extrabold shadow-md'
-                    : 'border-white/10 bg-zinc-900 text-zinc-500'
-                } ${isCurrent ? 'ring-2 ring-amber-400/40 scale-110' : ''}`}
+                    ? 'bg-[linear-gradient(135deg,#ff8a3d,#e6401a)] text-black font-extrabold shadow-md'
+                    : 'border-2 border-white/15 bg-zinc-900 text-zinc-500'
+                } ${isCurrent ? 'ring-4 ring-[rgba(230,64,26,0.2)] scale-110' : ''}`}
               >
                 {done ? <step.icon className="h-4 w-4 sm:h-5 sm:w-5" /> : <span className="text-xs sm:text-sm font-bold">{i + 1}</span>}
               </div>
-              <div className={`h-[2px] flex-1 ${i === STEPS.length - 1 ? 'invisible' : done ? 'bg-amber-400' : 'bg-zinc-800'}`} />
+              <div className={`h-[2px] flex-1 ${i === STEPS.length - 1 ? 'invisible' : done ? 'bg-[linear-gradient(90deg,#ff8a3d,#e6401a,#e90197)]' : 'bg-zinc-800'}`} />
             </div>
             <p className={`mt-2 text-[10px] sm:text-xs font-bold text-center ${done ? 'text-zinc-200' : 'text-zinc-500'}`}>
               {step.label}
@@ -247,29 +247,45 @@ export function OrderStatusView({
             <p className="text-[10px] font-black tracking-widest text-amber-400 uppercase">Live Order Tracking</p>
             <h2 className="text-lg font-black text-amber-50">Order #{order.id.slice(0, 8)}</h2>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-2 rounded-full border border-amber-400/40 bg-amber-400/15 px-3.5 py-1 text-xs font-black text-amber-300 shadow-inner">
-              <span className="h-2 w-2 rounded-full bg-amber-400 animate-ping" />
-              <span>Live Sync</span>
-            </div>
-            {notificationPermission === 'granted' ? (
-              <div
-                className="flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/15 px-3 py-1 text-xs font-black text-emerald-300"
-                title="You'll get a notification the moment your order is ready"
-              >
-                <BellIcon className="h-3 w-3" />
-                <span className="hidden sm:inline">Alerts On</span>
-              </div>
-            ) : notificationPermission === 'denied' ? (
-              <div
-                className="flex items-center gap-1.5 rounded-full border border-amber-900/40 bg-black/40 px-3 py-1 text-xs font-black text-amber-200/50"
-                title="Notifications blocked — enable them in your browser's site settings"
-              >
-                <BellOffIcon className="h-3 w-3" />
-                <span className="hidden sm:inline">Alerts Off</span>
-              </div>
-            ) : null}
+        </div>
+
+        <div className="flex flex-col items-center text-center -mt-2">
+          <div className="animate-pulse-ring flex h-16 w-16 items-center justify-center rounded-full bg-[linear-gradient(135deg,#ff8a3d,#e6401a_55%,#e90197)]">
+            {order.status === 'served' ? (
+              <SparkleIcon className="h-7 w-7 text-black" />
+            ) : order.status === 'ready' ? (
+              <BellIcon className="h-7 w-7 text-black" />
+            ) : order.status === 'preparing' ? (
+              <PotIcon className="h-7 w-7 text-black" />
+            ) : (
+              <ClipboardIcon className="h-7 w-7 text-black" />
+            )}
           </div>
+          <p className="display mt-3 text-3xl text-zinc-50">{order.status === 'placed' ? 'ORDER PLACED' : order.status.toUpperCase()}</p>
+        </div>
+
+        <div className="flex items-center justify-center gap-2">
+          <div className="flex items-center gap-2 rounded-full border border-amber-400/40 bg-amber-400/15 px-3.5 py-1 text-xs font-black text-amber-300 shadow-inner">
+            <span className="h-2 w-2 rounded-full bg-amber-400 animate-ping" />
+            <span>Live Sync</span>
+          </div>
+          {notificationPermission === 'granted' ? (
+            <div
+              className="flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/15 px-3 py-1 text-xs font-black text-emerald-300"
+              title="You'll get a notification the moment your order is ready"
+            >
+              <BellIcon className="h-3 w-3" />
+              <span className="hidden sm:inline">Alerts On</span>
+            </div>
+          ) : notificationPermission === 'denied' ? (
+            <div
+              className="flex items-center gap-1.5 rounded-full border border-amber-900/40 bg-black/40 px-3 py-1 text-xs font-black text-amber-200/50"
+              title="Notifications blocked — enable them in your browser's site settings"
+            >
+              <BellOffIcon className="h-3 w-3" />
+              <span className="hidden sm:inline">Alerts Off</span>
+            </div>
+          ) : null}
         </div>
 
         <StatusStepper status={order.status} />
@@ -283,37 +299,13 @@ export function OrderStatusView({
 
         <div className="rounded-2xl border border-amber-500/30 bg-black/60 p-4 text-center shadow-inner">
           {order.status === 'served' ? (
-            <div className="space-y-1">
-              <p className="flex items-center justify-center gap-1.5 text-base font-black text-amber-300">
-                <SparkleIcon className="h-4 w-4" />
-                Order Served!
-              </p>
-              <p className="text-xs text-amber-200/70 font-medium">Thank you for dining with Opa! Bar &amp; Cafe. Enjoy your meal!</p>
-            </div>
+            <p className="text-xs text-amber-200/70 font-medium">Thank you for dining with Mitron Thane. Enjoy your meal!</p>
           ) : order.status === 'ready' ? (
-            <div className="space-y-1">
-              <p className="flex items-center justify-center gap-1.5 text-base font-black text-amber-400 animate-pulse">
-                <BellIcon className="h-4 w-4" />
-                Your Order is Ready!
-              </p>
-              <p className="text-xs text-amber-200/70 font-medium">Our staff is serving your items to Table {order.tableNumber}.</p>
-            </div>
+            <p className="text-xs text-amber-200/70 font-medium">Our staff is serving your items to Table {order.tableNumber}.</p>
           ) : order.status === 'preparing' ? (
-            <div className="space-y-1">
-              <p className="flex items-center justify-center gap-1.5 text-base font-black text-amber-200">
-                <PotIcon className="h-4 w-4" />
-                Kitchen is Preparing Your Order
-              </p>
-              <p className="text-xs text-amber-200/70 font-medium">Hang tight! Your chef-crafted order is being freshly prepared.</p>
-            </div>
+            <p className="text-xs text-amber-200/70 font-medium">Hang tight! Your chef-crafted order is being freshly prepared.</p>
           ) : (
-            <div className="space-y-1">
-              <p className="flex items-center justify-center gap-1.5 text-base font-black text-amber-200">
-                <ClipboardIcon className="h-4 w-4" />
-                Order Received by Kitchen
-              </p>
-              <p className="text-xs text-amber-200/70 font-medium">We&rsquo;ll update this screen live as your order progresses.</p>
-            </div>
+            <p className="text-xs text-amber-200/70 font-medium">We&rsquo;ll update this screen live as your order progresses.</p>
           )}
         </div>
       </div>

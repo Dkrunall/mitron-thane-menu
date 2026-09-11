@@ -190,12 +190,12 @@ export function MenuItemRow({ item, categoryName }: { item: MenuItem; categoryNa
                         <p className="text-sm font-semibold text-zinc-200">{v.label}</p>
                         <p className="text-xs sm:text-sm font-extrabold text-amber-400">{formatPrice(v.price)}</p>
                       </div>
-                      <div className="flex shrink-0 items-center gap-2 rounded-lg border border-white/10 bg-black/60 p-1">
+                      <div className="flex shrink-0 items-center gap-2.5 rounded-full border border-white/10 bg-black/60 p-1">
                         <button
                           type="button"
                           onClick={() => setVariantQty(v.id, qty - 1)}
                           disabled={qty === 0}
-                          className="flex h-8 w-8 items-center justify-center rounded-md text-amber-400 hover:bg-white/10 active:scale-90 text-lg font-bold transition-all disabled:opacity-25 disabled:hover:bg-transparent"
+                          className="flex h-8 w-8 items-center justify-center rounded-full bg-white/8 text-zinc-200 hover:bg-white/15 active:scale-90 text-lg font-bold transition-all disabled:opacity-25 disabled:hover:bg-white/8"
                           aria-label={`Decrease ${v.label} quantity`}
                         >
                           −
@@ -204,7 +204,7 @@ export function MenuItemRow({ item, categoryName }: { item: MenuItem; categoryNa
                         <button
                           type="button"
                           onClick={() => setVariantQty(v.id, qty + 1)}
-                          className="flex h-8 w-8 items-center justify-center rounded-md text-amber-400 hover:bg-white/10 active:scale-90 text-lg font-bold transition-all"
+                          className="flex h-8 w-8 items-center justify-center rounded-full bg-[linear-gradient(135deg,#ff8a3d,#e6401a)] text-black active:scale-90 text-lg font-bold shadow-[0_4px_14px_-2px_rgba(230,64,26,0.6)] transition-all"
                           aria-label={`Increase ${v.label} quantity`}
                         >
                           +
@@ -250,13 +250,13 @@ export function MenuItemRow({ item, categoryName }: { item: MenuItem; categoryNa
           ) : (
             <div className="space-y-3 pt-1">
               {/* Stepper selector row */}
-              <div className="flex items-center justify-between rounded-xl border border-white/10 bg-black/50 px-3 py-2">
+              <div className="flex items-center justify-between rounded-full border border-white/10 bg-black/50 px-3 py-1.5">
                 <span className="text-xs font-semibold text-zinc-300">Quantity</span>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2.5">
                   <button
                     type="button"
                     onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                    className="flex h-7 w-7 items-center justify-center rounded-lg border border-white/10 bg-zinc-900 text-amber-400 hover:bg-zinc-800 active:scale-90 text-base font-bold transition-all cursor-pointer"
+                    className="flex h-7 w-7 items-center justify-center rounded-full bg-white/8 text-zinc-200 hover:bg-white/15 active:scale-90 text-base font-bold transition-all cursor-pointer"
                     aria-label="Decrease quantity"
                   >
                     −
@@ -265,7 +265,7 @@ export function MenuItemRow({ item, categoryName }: { item: MenuItem; categoryNa
                   <button
                     type="button"
                     onClick={() => setQuantity((q) => q + 1)}
-                    className="flex h-7 w-7 items-center justify-center rounded-lg border border-white/10 bg-zinc-900 text-amber-400 hover:bg-zinc-800 active:scale-90 text-base font-bold transition-all cursor-pointer"
+                    className="flex h-7 w-7 items-center justify-center rounded-full bg-[linear-gradient(135deg,#ff8a3d,#e6401a)] text-black active:scale-90 text-base font-bold shadow-[0_4px_14px_-2px_rgba(230,64,26,0.6)] transition-all cursor-pointer"
                     aria-label="Increase quantity"
                   >
                     +
