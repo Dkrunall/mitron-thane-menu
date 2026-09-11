@@ -1,4 +1,4 @@
--- OPA Bar & Cafe — QR table ordering
+-- Mitron Thane — QR table ordering
 -- 0003_seed_tables.sql: starter set of 20 dining tables so the
 -- customer flow (/order?table=N) works before the admin QR tool adds more.
 
