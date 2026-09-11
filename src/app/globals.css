@@ -151,10 +151,14 @@ h6 {
   -webkit-backdrop-filter: blur(20px);
 }
 
+/* Fully opaque on purpose: this backs sticky nav chrome (menu/cart/status
+   headers, the subcategory chip strip) that sits directly above scrolling
+   text content. A translucent background here — even blurred — still lets
+   bold text ghost through as the content scrolls underneath, which read as
+   an "overlapping" glitch. Reserve backdrop-blur glass for surfaces that
+   sit over photography (see .glass-panel, .glass-pill), not over text. */
 .glass-header {
-  background: rgba(9, 9, 11, 0.85);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  background: #121215;
   border: 1px solid rgba(255, 255, 255, 0.09);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }

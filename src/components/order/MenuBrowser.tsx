@@ -130,21 +130,27 @@ export function MenuBrowser({
   if (currentSection && !isSearching) {
     return (
       <OrderFrame tableNumber={tableNumber}>
-        <OrderHeader
-          tableNumber={tableNumber}
-          title={currentSection.section}
-          onBack={() => setSelectedSection(null)}
-          dietFilter={dietFilter}
-          onDietFilterChange={setDietFilter}
-          onOpenFilters={() => setIsFilterModalOpen(true)}
-          filterActive={isLabelFilterActive(labelFilters)}
-        />
+        {/* Single sticky band covering header + chip strip as one opaque
+            unit — two independently-sticky pieces left a gap between them
+            that scrolling item text showed through (looked like an
+            "overlap" glitch). One continuous backdrop has no such gap. */}
+        <div className="sticky top-0 z-40 bg-[#09090b] pb-1.5">
+          <OrderHeader
+            tableNumber={tableNumber}
+            title={currentSection.section}
+            onBack={() => setSelectedSection(null)}
+            dietFilter={dietFilter}
+            onDietFilterChange={setDietFilter}
+            onOpenFilters={() => setIsFilterModalOpen(true)}
+            filterActive={isLabelFilterActive(labelFilters)}
+          />
 
-        <SubcategoryRail
-          categories={currentSection.categories}
-          activeCategoryId={activeCategory?.id ?? null}
-          onSelect={setExplicitCategoryId}
-        />
+          <SubcategoryRail
+            categories={currentSection.categories}
+            activeCategoryId={activeCategory?.id ?? null}
+            onSelect={setExplicitCategoryId}
+          />
+        </div>
 
         <main className="flex-1 space-y-3 px-4 pt-3 pb-6">
           {!activeCategory || activeCategory.items.length === 0 ? (

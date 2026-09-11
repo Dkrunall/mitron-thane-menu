@@ -10,6 +10,11 @@ import type { MenuSection } from '@/types/menu';
  * a rail of identical placeholder icons was a worse look than text
  * chips). Tapping one switches the item list below it in place, no
  * navigation to a separate screen.
+ *
+ * Not sticky on its own — the caller wraps this together with the screen
+ * header in one sticky band so there's a single continuous opaque
+ * backdrop, not two independently-positioned sticky pieces with a gap
+ * scrolling content could show through.
  */
 export function SubcategoryRail({
   categories,
@@ -21,7 +26,7 @@ export function SubcategoryRail({
   onSelect: (categoryId: string) => void;
 }) {
   return (
-    <div className="no-scrollbar sticky top-[4.5rem] z-10 -mx-4 flex gap-2 overflow-x-auto bg-[#09090b]/85 px-4 py-2 backdrop-blur-xl">
+    <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 pt-1 pb-2">
       {categories.map((cat) => {
         const isActive = cat.id === activeCategoryId;
         return (
