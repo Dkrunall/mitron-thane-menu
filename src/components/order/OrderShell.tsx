@@ -65,7 +65,7 @@ export function OrderHeader({
 }) {
   if (title) {
     return (
-      <header className="glass-pill sticky top-2 z-40 mx-3 my-2 flex items-center justify-between gap-3 rounded-2xl px-3.5 sm:px-4 py-2.5 shadow-xl">
+      <header className="glass-header sticky top-2 z-40 mx-3 my-2 flex items-center justify-between gap-3 rounded-2xl px-3.5 sm:px-4 py-2.5 shadow-xl">
         <div className="flex items-center gap-3 min-w-0 flex-1">
           {onBack ? (
             <button
@@ -140,7 +140,7 @@ export function OrderHeader({
   }
 
   return (
-    <header className="glass-pill sticky top-2 z-40 mx-3 my-2 flex items-center justify-between gap-2.5 rounded-2xl px-3.5 sm:px-4 py-2.5 shadow-xl">
+    <header className="glass-header sticky top-2 z-40 mx-3 my-2 flex items-center justify-between gap-2.5 rounded-2xl px-3.5 sm:px-4 py-2.5 shadow-xl">
       {/* Left: Veg Switch */}
       <div className="flex items-center gap-2">
         {onDietFilterChange ? (

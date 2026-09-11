@@ -1,14 +1,15 @@
 'use client';
 
-import Image from 'next/image';
 import type { MenuSection } from '@/types/menu';
-import { isValidImageSrc } from '@/lib/imageUrl';
-import { PlateIcon } from '@/components/icons';
 
 /**
- * Vertical rail of subcategory thumbnails (photo + label), mirroring
- * Zillout's own category sidebar — tapping one switches the item list next
- * to it in place, no navigation to a separate screen.
+ * Horizontal strip of subcategory pill chips — mirrors the approved
+ * mockup's category selector (Menu.dc.html) more closely than a photo
+ * rail, and degrades gracefully since subcategories rarely have their own
+ * representative photo (menu_items/categories images are mostly unset;
+ * a rail of identical placeholder icons was a worse look than text
+ * chips). Tapping one switches the item list below it in place, no
+ * navigation to a separate screen.
  */
 export function SubcategoryRail({
   categories,
@@ -20,39 +21,21 @@ export function SubcategoryRail({
   onSelect: (categoryId: string) => void;
 }) {
   return (
-    <div className="sticky top-[4.5rem] flex max-h-[calc(100vh-6rem)] w-16 sm:w-20 shrink-0 flex-col gap-2.5 overflow-y-auto no-scrollbar pb-6 pt-1">
+    <div className="no-scrollbar sticky top-[4.5rem] z-10 -mx-4 flex gap-2 overflow-x-auto bg-[#09090b]/85 px-4 py-2 backdrop-blur-xl">
       {categories.map((cat) => {
         const isActive = cat.id === activeCategoryId;
-        const image = [cat.imageUrl, cat.items[0]?.imageUrl].find(isValidImageSrc) ?? null;
         return (
           <button
             key={cat.id}
             type="button"
             onClick={() => onSelect(cat.id)}
-            className="flex shrink-0 flex-col items-center gap-1.5 active:scale-95 transition-transform cursor-pointer"
+            className={`shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-xs font-bold transition-all duration-200 active:scale-95 cursor-pointer ${
+              isActive
+                ? 'bg-[linear-gradient(120deg,#ff8a3d,#e6401a_60%,#e90197)] text-black shadow-[0_4px_16px_-3px_rgba(230,64,26,0.55)]'
+                : 'border border-white/10 bg-white/5 text-zinc-300 hover:border-white/20'
+            }`}
           >
-            <div
-              className={`relative h-14 w-14 sm:h-16 sm:w-16 overflow-hidden rounded-xl transition-all duration-300 ${
-                isActive
-                  ? 'ring-2 ring-[var(--mitron-flame)] bg-zinc-800 shadow-[0_4px_16px_-3px_rgba(230,64,26,0.55)] scale-105'
-                  : 'border border-white/10 bg-zinc-900/80 opacity-70 hover:opacity-100 hover:border-white/20'
-              }`}
-            >
-              {image ? (
-                <Image src={image} alt={cat.name} fill sizes="64px" className="object-cover" />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center bg-zinc-800">
-                  <PlateIcon className="h-5 w-5 text-zinc-500" />
-                </div>
-              )}
-            </div>
-            <span
-              className={`text-center text-[10px] leading-tight line-clamp-2 px-0.5 ${
-                isActive ? 'font-bold text-amber-300' : 'font-medium text-zinc-400'
-              }`}
-            >
-              {cat.name}
-            </span>
+            {cat.name}
           </button>
         );
       })}

@@ -140,24 +140,22 @@ export function MenuBrowser({
           filterActive={isLabelFilterActive(labelFilters)}
         />
 
-        <main className="flex-1 flex gap-2.5 sm:gap-3.5 px-3 sm:px-4 pt-2 pb-6">
-          <SubcategoryRail
-            categories={currentSection.categories}
-            activeCategoryId={activeCategory?.id ?? null}
-            onSelect={setExplicitCategoryId}
-          />
+        <SubcategoryRail
+          categories={currentSection.categories}
+          activeCategoryId={activeCategory?.id ?? null}
+          onSelect={setExplicitCategoryId}
+        />
 
-          <div className="min-w-0 flex-1 space-y-3">
-            {!activeCategory || activeCategory.items.length === 0 ? (
-              <div className="p-8 text-center rounded-2xl border border-white/10 bg-[#121215]">
-                <p className="text-zinc-400 text-sm font-medium">No items match your filter.</p>
-              </div>
-            ) : (
-              activeCategory.items.map((item) => (
-                <MenuItemRow key={item.id} item={item} categoryName={activeCategory.name} />
-              ))
-            )}
-          </div>
+        <main className="flex-1 space-y-3 px-4 pt-3 pb-6">
+          {!activeCategory || activeCategory.items.length === 0 ? (
+            <div className="p-8 text-center rounded-2xl border border-white/10 bg-[#121215]">
+              <p className="text-zinc-400 text-sm font-medium">No items match your filter.</p>
+            </div>
+          ) : (
+            activeCategory.items.map((item) => (
+              <MenuItemRow key={item.id} item={item} categoryName={activeCategory.name} />
+            ))
+          )}
         </main>
 
         {isFilterModalOpen ? (
