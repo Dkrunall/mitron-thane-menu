@@ -1,4 +1,4 @@
-# OPA Bar & Cafe — QR Table Ordering
+# Mitron Thane — QR Table Ordering
 
 Next.js (App Router, TypeScript) + Supabase (Postgres, Auth, Realtime) + Tailwind CSS.
 
@@ -22,10 +22,9 @@ Open your Supabase project's **SQL Editor** and run these files **in order** (ea
 1. `supabase/migrations/0001_schema.sql` — tables, enums, indexes
 2. `supabase/migrations/0002_rls.sql` — row level security policies
 3. `supabase/migrations/0003_seed_tables.sql` — 20 starter dining tables (1–20)
-4. `supabase/migrations/0004_seed_menu.sql` — the full OPA menu (46 categories, 410 items, 328 price variants), extracted from the venue's live menu
+4. `supabase/migrations/0004_seed_menu.sql` — the full Mitron Thane menu (40 categories, 453 items, 219 price variants), transcribed from the venue's public Zomato listing
 5. `supabase/migrations/0005_realtime.sql` — turns on Realtime for the `orders` table (powers the live customer status screen and admin dashboard)
-6. `supabase/migrations/0006_category_images.sql` — adds `categories.image_url`
-7. `supabase/migrations/0007_seed_category_images.sql` — populates it for 43 of 46 categories, sourced from Zillout's shared category-icon library
+6. `supabase/migrations/0006_category_images.sql` — adds `categories.image_url` (left empty — no category photos were available to seed; add your own later or via the admin UI)
 
 Paste each file's contents into the SQL Editor and click Run, in that order.
 
@@ -36,7 +35,7 @@ Paste each file's contents into the SQL Editor and click Run, in that order.
 The app has no self-serve sign-up (by design — see the RLS notes in `0002_rls.sql`). Create the first manager account with:
 
 ```bash
-npm run create-admin -- owner@opabar.com "a-strong-password" manager
+npm run create-admin -- owner@mitronthane.example "a-strong-password" manager
 ```
 
 (role is `manager` or `kitchen`; run it again with a different email for more logins)
