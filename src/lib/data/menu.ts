@@ -118,3 +118,43 @@ export async function getCategoryById(categoryId: string): Promise<MenuCategory 
     items,
   };
 }
+
+/** Single menu item with variants and its parent category name — used by the customer item detail screen. */
+export async function getMenuItemById(itemId: string): Promise<{ item: MenuItem; categoryName: string } | null> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from('menu_items')
+    .select(
+      `id, category_id, name, description, price, image_url,
+       dietary_type, is_alcoholic, is_available, sort_order,
+       categories ( name ),
+       menu_item_variants ( id, label, price, sort_order )`
+    )
+    .eq('id', itemId)
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!data) return null;
+
+  return {
+    item: {
+      id: data.id,
+      categoryId: data.category_id,
+      name: data.name,
+      description: data.description,
+      price: Number(data.price),
+      imageUrl: data.image_url,
+      dietaryType: data.dietary_type,
+      isAlcoholic: data.is_alcoholic,
+      isAvailable: data.is_available,
+      sortOrder: data.sort_order,
+      allergens: parseAllergens(data.description),
+      variants: (data.menu_item_variants ?? [])
+        .map((v) => ({ id: v.id, label: v.label, price: Number(v.price), sortOrder: v.sort_order }))
+        .sort((a, b) => a.sortOrder - b.sortOrder),
+    },
+    categoryName: (data.categories as unknown as { name: string } | null)?.name ?? 'Menu',
+  };
+}
+

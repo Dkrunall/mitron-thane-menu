@@ -3,15 +3,10 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { createServiceRequest } from '@/lib/actions/serviceRequests';
-import { CheckIcon, ConciergeBellIcon, DocumentIcon, WarningIcon } from '@/components/icons';
+import { BellIcon, CheckIcon, DocumentIcon, WarningIcon } from '@/components/icons';
 import type { Database, ServiceRequestType } from '@/types/database';
 
 type ServiceRequestRow = Database['public']['Tables']['service_requests']['Row'];
-
-const LABEL: Record<ServiceRequestType, { idle: string; pending: string; icon: typeof ConciergeBellIcon }> = {
-  call_waiter: { idle: 'Call Waiter', pending: 'Waiter Notified', icon: ConciergeBellIcon },
-  request_bill: { idle: 'Request Bill', pending: 'Bill Requested', icon: DocumentIcon },
-};
 
 /**
  * Table-shared, realtime-synced "Call Waiter" / "Request Bill" buttons —
@@ -87,31 +82,57 @@ export function ServiceRequestButtons({ tableNumber }: { tableNumber: number }) 
   }
 
   return (
-    <div className="space-y-2">
-      <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
-        {(Object.keys(LABEL) as ServiceRequestType[]).map((type) => {
-          const { idle, pending: pendingLabel, icon: Icon } = LABEL[type];
-          const isPending = pending[type];
-          return (
-            <button
-              key={type}
-              type="button"
-              onClick={() => handleRequest(type)}
-              disabled={isPending}
-              className={`flex items-center justify-center gap-2 rounded-xl border px-3 sm:px-4 py-3 sm:py-3.5 text-xs sm:text-sm font-bold transition-all cursor-pointer ${
-                isPending
-                  ? 'border-emerald-500/50 bg-emerald-500/10 text-emerald-300 cursor-default'
-                  : 'border-white/10 bg-zinc-900/80 text-zinc-200 hover:border-amber-400/40 hover:bg-zinc-800 active:scale-95 shadow-sm'
-              }`}
-            >
-              {isPending ? <CheckIcon className="h-4 w-4 text-emerald-400" /> : <Icon className="h-4 w-4 text-amber-400" />}
-              <span className="truncate">{isPending ? pendingLabel : idle}</span>
-            </button>
-          );
-        })}
-      </div>
+    <div className="space-y-2.5">
+      {/* Primary "Call for service" button matching reference design */}
+      <button
+        type="button"
+        onClick={() => handleRequest('call_waiter')}
+        disabled={pending.call_waiter}
+        className={`w-full rounded-2xl border py-3.5 px-5 flex items-center justify-center gap-2.5 font-bold text-sm transition-all cursor-pointer ${
+          pending.call_waiter
+            ? 'border-emerald-500/50 bg-emerald-500/10 text-emerald-300 cursor-default'
+            : 'border-[#ff6830]/40 bg-[#161212] hover:bg-[#1f1614] text-[#ff8a3d] active:scale-[0.99] shadow-sm'
+        }`}
+      >
+        {pending.call_waiter ? (
+          <>
+            <CheckIcon className="h-4 w-4 text-emerald-400" />
+            <span>Waiter Notified</span>
+          </>
+        ) : (
+          <>
+            <BellIcon className="h-4 w-4 text-[#ff8a3d]" />
+            <span>Call for service</span>
+          </>
+        )}
+      </button>
+
+      {/* Secondary "Request Bill" button */}
+      <button
+        type="button"
+        onClick={() => handleRequest('request_bill')}
+        disabled={pending.request_bill}
+        className={`w-full rounded-2xl border py-2.5 px-4 flex items-center justify-center gap-2 font-bold text-xs text-zinc-400 transition-all cursor-pointer ${
+          pending.request_bill
+            ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-300 cursor-default'
+            : 'border-white/[0.07] bg-[#121215] hover:bg-[#18181f] text-zinc-300 hover:text-white active:scale-[0.99]'
+        }`}
+      >
+        {pending.request_bill ? (
+          <>
+            <CheckIcon className="h-3.5 w-3.5 text-emerald-400" />
+            <span>Bill Requested</span>
+          </>
+        ) : (
+          <>
+            <DocumentIcon className="h-3.5 w-3.5 text-zinc-400" />
+            <span>Request Bill</span>
+          </>
+        )}
+      </button>
+
       {error ? (
-        <p className="flex items-center gap-1.5 text-xs font-medium text-rose-400">
+        <p className="flex items-center justify-center gap-1.5 text-xs font-medium text-rose-400 pt-1">
           <WarningIcon className="h-4 w-4 shrink-0" />
           {error}
         </p>
@@ -119,3 +140,4 @@ export function ServiceRequestButtons({ tableNumber }: { tableNumber: number }) 
     </div>
   );
 }
+

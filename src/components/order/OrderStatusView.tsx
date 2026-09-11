@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { useRefetchOnFocus } from '@/lib/useRefetchOnFocus';
 import { formatPrice } from '@/lib/format';
@@ -11,7 +12,7 @@ import {
   showBrowserNotification,
   vibrateIfSupported,
 } from '@/lib/alerts';
-import { BellIcon, BellOffIcon, ClipboardIcon, PotIcon, SparkleIcon } from '@/components/icons';
+import { BellIcon, BellOffIcon, ClipboardIcon, SparkleIcon } from '@/components/icons';
 import { OrderFeedbackForm } from './OrderFeedbackForm';
 import { ServiceRequestButtons } from './ServiceRequestButtons';
 import { InstallPromptBanner } from './InstallPromptBanner';
@@ -20,45 +21,79 @@ import { getTableRunningTotal, type TableRunningTotal } from '@/lib/data/tableRu
 import { ensurePushSubscription } from '@/lib/push/subscribeClient';
 import { subscribeToOrderPush } from '@/lib/actions/push';
 import type { OrderStatus } from '@/types/database';
-import type { ComponentType, SVGProps } from 'react';
 
-// Safety-net poll, on top of the realtime subscription below — catches the
-// rare case where the socket drops without a visibilitychange/focus event
-// firing to trigger the refocus resync (e.g. a flaky mobile connection
-// while the tab stays foregrounded). Stops once the order is served.
 const STATUS_POLL_INTERVAL_MS = 20 * 1000;
 
-const STEPS: { status: OrderStatus; label: string; icon: ComponentType<SVGProps<SVGSVGElement>> }[] = [
-  { status: 'placed', label: 'Order Placed', icon: ClipboardIcon },
-  { status: 'preparing', label: 'Preparing', icon: PotIcon },
-  { status: 'ready', label: 'Ready', icon: BellIcon },
-  { status: 'served', label: 'Served', icon: SparkleIcon },
+const STEPS: { status: OrderStatus; label: string }[] = [
+  { status: 'placed', label: 'Placed' },
+  { status: 'preparing', label: 'Preparing' },
+  { status: 'ready', label: 'Ready' },
+  { status: 'served', label: 'Served' },
 ];
 
 function StatusStepper({ status }: { status: OrderStatus }) {
   const currentIndex = STEPS.findIndex((s) => s.status === status);
 
   return (
-    <div className="flex items-center justify-between py-2">
+    <div className="flex items-center justify-between px-1 sm:px-3 py-3">
       {STEPS.map((step, i) => {
-        const done = i <= currentIndex;
-        const isCurrent = i === currentIndex;
+        const isPassedOrCurrent = i <= currentIndex;
         return (
           <div key={step.status} className="flex flex-1 flex-col items-center">
             <div className="flex w-full items-center">
-              <div className={`h-[2px] flex-1 ${i === 0 ? 'invisible' : done ? 'bg-[linear-gradient(90deg,#ff8a3d,#e6401a,#e90197)]' : 'bg-zinc-800'}`} />
+              {/* Left connecting line */}
               <div
-                className={`relative flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-full transition-all ${
-                  done
-                    ? 'bg-[linear-gradient(135deg,#ff8a3d,#e6401a)] text-black font-extrabold shadow-md'
-                    : 'border-2 border-white/15 bg-zinc-900 text-zinc-500'
-                } ${isCurrent ? 'ring-4 ring-[rgba(230,64,26,0.2)] scale-110' : ''}`}
+                className={`h-[2px] flex-1 ${
+                  i === 0
+                    ? 'invisible'
+                    : i <= currentIndex
+                    ? 'bg-[#ff6830]'
+                    : 'bg-zinc-800'
+                }`}
+              />
+
+              {/* Step indicator circle */}
+              <div
+                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-all ${
+                  isPassedOrCurrent
+                    ? 'bg-[#ff6830] text-black shadow-[0_2px_10px_rgba(255,104,48,0.45)]'
+                    : 'border-2 border-zinc-800 bg-[#121215] text-transparent'
+                }`}
               >
-                {done ? <step.icon className="h-4 w-4 sm:h-5 sm:w-5" /> : <span className="text-xs sm:text-sm font-bold">{i + 1}</span>}
+                {isPassedOrCurrent ? (
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="3.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                ) : null}
               </div>
-              <div className={`h-[2px] flex-1 ${i === STEPS.length - 1 ? 'invisible' : done ? 'bg-[linear-gradient(90deg,#ff8a3d,#e6401a,#e90197)]' : 'bg-zinc-800'}`} />
+
+              {/* Right connecting line */}
+              <div
+                className={`h-[2px] flex-1 ${
+                  i === STEPS.length - 1
+                    ? 'invisible'
+                    : i < currentIndex
+                    ? 'bg-[#ff6830]'
+                    : 'bg-zinc-800'
+                }`}
+              />
             </div>
-            <p className={`mt-2 text-[10px] sm:text-xs font-bold text-center ${done ? 'text-zinc-200' : 'text-zinc-500'}`}>
+
+            {/* Step Label */}
+            <p
+              className={`mt-2 text-xs font-bold text-center ${
+                isPassedOrCurrent ? 'text-white' : 'text-zinc-500'
+              }`}
+            >
               {step.label}
             </p>
           </div>
@@ -82,21 +117,14 @@ export function OrderStatusView({
   const [notificationPermission, setNotificationPermission] = useState<NotificationPermission | 'unsupported' | null>(null);
   const [liveRunningTotal, setLiveRunningTotal] = useState(runningTotal);
 
-  // Reflects whatever the customer answered at the "Send Order to Kitchen"
-  // prompt (see CartReview.tsx) — this page never asks itself, it only
-  // shows the resulting state.
+  const tableLabel = `T-${order.tableNumber < 10 ? `0${order.tableNumber}` : order.tableNumber}`;
+  const shortOrderId = order.id.replace(/-/g, '').slice(0, 4).toUpperCase();
+
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- syncing from an external browser API on mount, not a derived-state cascade
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- syncing from an external browser API on mount
     setNotificationPermission(isNotificationSupported() ? getNotificationPermission() : 'unsupported');
   }, []);
 
-  // Opportunistically upgrade to real Web Push, which reaches this device
-  // even with the tab/browser fully closed — unlike the in-tab
-  // Notification API alert above, which only fires while a tab is open.
-  // Only runs once permission is already 'granted' (asked for at
-  // "Send Order to Kitchen" time, see CartReview.tsx) — this never prompts
-  // on its own, and fails silently if unsupported/misconfigured, since the
-  // in-tab alert already covers this order regardless.
   useEffect(() => {
     if (notificationPermission !== 'granted') return;
     let cancelled = false;
@@ -108,17 +136,11 @@ export function OrderStatusView({
     };
   }, [notificationPermission, order.id]);
 
-  // Shared by the live subscription below and the refetch fallbacks
-  // (refocus + poll) so a status change is announced (chime/vibrate/
-  // notification) exactly once no matter which path first learns about it.
   const applyStatusUpdate = useCallback(
     (next: { status: OrderStatus; served_at: string | null }) => {
       if (next.status === 'ready' && statusRef.current !== 'ready') {
         playReadyChime();
         vibrateIfSupported([200, 100, 200]);
-        // Same tag as the Web Push notification for this order (see
-        // lib/push/notify.ts) — if both arrive (tab open when the push
-        // lands), the OS replaces rather than stacks them.
         showBrowserNotification(
           'Your order is ready!',
           `Table ${order.tableNumber} — head to your table, staff is on the way.`,
@@ -149,12 +171,6 @@ export function OrderStatusView({
     };
   }, [order.id, applyStatusUpdate]);
 
-  // Realtime doesn't replay events missed while this tab's websocket was
-  // suspended — which mobile browsers do aggressively in the background —
-  // so a customer who locks their phone while waiting can come back to a
-  // status screen that's silently stuck on "Preparing" even though the
-  // kitchen marked it ready minutes ago. Resync on refocus, plus a light
-  // poll as a fallback for drops that don't fire a focus/visibility event.
   const refetchStatus = useCallback(async () => {
     const supabase = createClient();
     try {
@@ -166,14 +182,6 @@ export function OrderStatusView({
     }
   }, [order.id, applyStatusUpdate]);
 
-  // The running total ("Table N total so far") was previously fetched once
-  // server-side at page load and never touched again — it kept showing a
-  // stale count/amount if another guest at the table placed a second order
-  // while this screen stayed open, despite everything else on this page
-  // being "live". Refetch it alongside the order status on the same
-  // triggers (refocus, poll, and — since a second order changes this,
-  // not this order's own status — a realtime subscription scoped to every
-  // order at this table, not just this one).
   const hasRunningTotal = runningTotal !== undefined;
   const refetchRunningTotal = useCallback(async () => {
     if (!hasRunningTotal) return;
@@ -237,128 +245,153 @@ export function OrderStatusView({
   const total = order.items.reduce((n, i) => n + i.priceAtOrder * i.quantity, 0);
 
   return (
-    <div className="space-y-6 pb-8">
+    <div className="flex flex-col min-h-screen px-4 pt-3 pb-8 space-y-4">
       <InstallPromptBanner />
 
-      {/* Main status tracking card */}
-      <div className="overflow-hidden rounded-3xl border border-amber-500/30 bg-gradient-to-b from-[#1c1814] via-[#15120f] to-[#100e0b] p-6 shadow-2xl space-y-6 gold-glow-sm">
-        <div className="flex items-center justify-between border-b border-amber-900/30 pb-4">
-          <div>
-            <p className="text-[10px] font-black tracking-widest text-amber-400 uppercase">Live Order Tracking</p>
-            <h2 className="text-lg font-black text-amber-50">Order #{order.id.slice(0, 8)}</h2>
-          </div>
+      {/* Top Header matching reference image: ORDER #0248  and  T-04 */}
+      <div className="flex items-center justify-between pb-1">
+        <div className="flex items-center gap-2">
+          <Link
+            href={`/order?table=${order.tableNumber}`}
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-[#18181c] border border-white/10 text-zinc-300 hover:text-white active:scale-95 transition-all shadow-sm"
+            aria-label="Back to menu"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M15 18l-6-6 6-6" />
+            </svg>
+          </Link>
+          <span className="text-xs font-bold tracking-widest text-zinc-400 uppercase">
+            ORDER #{shortOrderId}
+          </span>
         </div>
 
-        <div className="flex flex-col items-center text-center -mt-2">
-          <div className="animate-pulse-ring flex h-16 w-16 items-center justify-center rounded-full bg-[linear-gradient(135deg,#ff8a3d,#e6401a_55%,#e90197)]">
-            {order.status === 'served' ? (
-              <SparkleIcon className="h-7 w-7 text-black" />
-            ) : order.status === 'ready' ? (
-              <BellIcon className="h-7 w-7 text-black" />
-            ) : order.status === 'preparing' ? (
-              <PotIcon className="h-7 w-7 text-black" />
-            ) : (
-              <ClipboardIcon className="h-7 w-7 text-black" />
-            )}
-          </div>
-          <p className="display mt-3 text-3xl text-zinc-50">{order.status === 'placed' ? 'ORDER PLACED' : order.status.toUpperCase()}</p>
-        </div>
-
-        <div className="flex items-center justify-center gap-2">
-          <div className="flex items-center gap-2 rounded-full border border-amber-400/40 bg-amber-400/15 px-3.5 py-1 text-xs font-black text-amber-300 shadow-inner">
-            <span className="h-2 w-2 rounded-full bg-amber-400 animate-ping" />
-            <span>Live Sync</span>
-          </div>
-          {notificationPermission === 'granted' ? (
-            <div
-              className="flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/15 px-3 py-1 text-xs font-black text-emerald-300"
-              title="You'll get a notification the moment your order is ready"
-            >
-              <BellIcon className="h-3 w-3" />
-              <span className="hidden sm:inline">Alerts On</span>
-            </div>
-          ) : notificationPermission === 'denied' ? (
-            <div
-              className="flex items-center gap-1.5 rounded-full border border-amber-900/40 bg-black/40 px-3 py-1 text-xs font-black text-amber-200/50"
-              title="Notifications blocked — enable them in your browser's site settings"
-            >
-              <BellOffIcon className="h-3 w-3" />
-              <span className="hidden sm:inline">Alerts Off</span>
-            </div>
-          ) : null}
-        </div>
-
-        <StatusStepper status={order.status} />
-
-        {notificationPermission === 'denied' ? (
-          <p className="-mt-2 flex items-center gap-1.5 text-[11px] text-amber-200/50">
-            <BellOffIcon className="h-3 w-3 shrink-0" />
-            Notifications are blocked for this site — enable them in your browser settings to get alerted the moment your order is ready.
-          </p>
-        ) : null}
-
-        <div className="rounded-2xl border border-amber-500/30 bg-black/60 p-4 text-center shadow-inner">
-          {order.status === 'served' ? (
-            <p className="text-xs text-amber-200/70 font-medium">Thank you for dining with Mitron Thane. Enjoy your meal!</p>
-          ) : order.status === 'ready' ? (
-            <p className="text-xs text-amber-200/70 font-medium">Our staff is serving your items to Table {order.tableNumber}.</p>
-          ) : order.status === 'preparing' ? (
-            <p className="text-xs text-amber-200/70 font-medium">Hang tight! Your chef-crafted order is being freshly prepared.</p>
-          ) : (
-            <p className="text-xs text-amber-200/70 font-medium">We&rsquo;ll update this screen live as your order progresses.</p>
-          )}
+        <div className="flex items-center gap-2">
+          <span className="rounded-full bg-[#18181c] border border-white/10 px-3.5 py-1 text-xs font-bold text-zinc-300">
+            {tableLabel}
+          </span>
         </div>
       </div>
 
-      {/* Call Waiter / Request Bill */}
-      <ServiceRequestButtons tableNumber={order.tableNumber} />
-
-      {/* Order receipt details */}
-      <div className="rounded-3xl border border-amber-500/20 bg-[#161310] p-5 space-y-4 shadow-xl">
-        <div className="flex items-center justify-between border-b border-amber-900/30 pb-3">
-          <h3 className="text-xs font-black tracking-widest text-amber-400 uppercase">Order Summary</h3>
-          <span className="text-xs text-amber-200/70 font-bold">Table {order.tableNumber}</span>
+      {/* Center Hero Status Section matching reference design */}
+      <div className="flex flex-col items-center text-center pt-2 pb-1 space-y-2">
+        {/* Gradient Icon Badge (Lightning bolt for preparing) */}
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[linear-gradient(135deg,#ff5722_0%,#e91e63_100%)] shadow-[0_10px_28px_rgba(255,87,34,0.4)] transition-all">
+          {order.status === 'served' ? (
+            <SparkleIcon className="h-7 w-7 text-black" />
+          ) : order.status === 'ready' ? (
+            <BellIcon className="h-7 w-7 text-black" />
+          ) : order.status === 'preparing' ? (
+            <svg className="h-7 w-7 text-black fill-current" viewBox="0 0 24 24">
+              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+            </svg>
+          ) : (
+            <ClipboardIcon className="h-7 w-7 text-black" />
+          )}
         </div>
 
-        <div className="space-y-3">
+        {/* Status Title */}
+        <h1 className="display text-3xl sm:text-4xl text-white tracking-wider font-normal uppercase">
+          {order.status === 'placed' ? 'ORDER PLACED' : order.status.toUpperCase()}
+        </h1>
+
+        {/* Subtitle */}
+        <p className="text-xs sm:text-sm text-zinc-400 font-normal max-w-xs">
+          {order.status === 'served'
+            ? 'Thank you for dining with Mitron Thane. Enjoy your meal!'
+            : order.status === 'ready'
+            ? `Our staff is serving your items to Table ${order.tableNumber}.`
+            : order.status === 'preparing'
+            ? 'Your order is on the fire. Sit back and relax.'
+            : 'Your order has reached the kitchen.'}
+        </p>
+      </div>
+
+      {/* 4-Step Timeline Stepper matching reference design */}
+      <StatusStepper status={order.status} />
+
+      {notificationPermission === 'denied' ? (
+        <p className="flex items-center justify-center gap-1.5 text-[11px] text-amber-200/60 text-center">
+          <BellOffIcon className="h-3 w-3 shrink-0" />
+          Notifications are disabled in your browser.
+        </p>
+      ) : null}
+
+      {/* "IN THIS ORDER" items list matching reference design */}
+      <div className="space-y-2.5 pt-1">
+        <p className="text-[11px] font-bold tracking-widest text-zinc-400 uppercase">
+          IN THIS ORDER
+        </p>
+
+        <div className="space-y-2.5">
           {order.items.map((item) => (
-            <div key={item.id} className="flex items-start justify-between gap-3 border-b border-amber-900/20 pb-3">
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-black text-amber-50">
-                  {item.quantity} × {item.menuItemName}
-                </p>
-                {item.variantLabel ? (
-                  <p className="text-xs text-amber-300 font-bold">{item.variantLabel}</p>
-                ) : null}
-                {item.notes ? (
-                  <p className="text-xs text-amber-200/70 italic">&ldquo;{item.notes}&rdquo;</p>
-                ) : null}
+            <div
+              key={item.id}
+              className="rounded-2xl border border-white/[0.07] bg-[#121215] px-4 py-3.5 flex items-center justify-between shadow-md"
+            >
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                <span className="text-xs font-bold text-zinc-400 shrink-0">
+                  {item.quantity}×
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm sm:text-base font-bold text-white truncate">
+                    {item.menuItemName}
+                  </p>
+                  {item.variantLabel ? (
+                    <p className="text-xs text-zinc-400 font-normal">{item.variantLabel}</p>
+                  ) : null}
+                  {item.notes ? (
+                    <p className="text-xs italic text-zinc-400">&ldquo;{item.notes}&rdquo;</p>
+                  ) : null}
+                </div>
               </div>
-              <p className="shrink-0 text-sm font-black text-amber-400">
+
+              <span className="text-sm sm:text-base font-black text-[#f97316] shrink-0 ml-3">
                 {formatPrice(item.priceAtOrder * item.quantity)}
-              </p>
+              </span>
             </div>
           ))}
         </div>
+      </div>
 
-        <div className="flex items-center justify-between pt-2 text-base font-black text-amber-50">
-          <span>Total Paid / Due</span>
-          <span className="text-amber-400 text-xl font-black">{formatPrice(total)}</span>
+      {/* Bill summary & running total */}
+      <div className="rounded-2xl border border-white/[0.07] bg-[#121215] p-4 space-y-2 shadow-md">
+        <div className="flex items-center justify-between">
+          <span className="text-xs sm:text-sm font-medium text-zinc-400">Order Total</span>
+          <span className="text-base font-black text-[#f97316]">{formatPrice(total)}</span>
         </div>
 
         {liveRunningTotal && liveRunningTotal.orderCount > 1 ? (
-          <div className="flex items-center justify-between border-t border-amber-900/30 pt-3 text-xs">
-            <span className="text-amber-200/60 font-semibold">
-              Table {order.tableNumber} total so far ({liveRunningTotal.orderCount} orders)
-            </span>
-            <span className="font-black text-amber-200">{formatPrice(liveRunningTotal.totalAmount)}</span>
+          <div className="border-t border-white/[0.06] pt-2 flex items-center justify-between text-xs text-zinc-400">
+            <span>Table {order.tableNumber} running total ({liveRunningTotal.orderCount} orders)</span>
+            <span className="font-bold text-zinc-200">{formatPrice(liveRunningTotal.totalAmount)}</span>
           </div>
         ) : null}
       </div>
 
-      {order.status === 'served' && !hasFeedback ? <OrderFeedbackForm orderId={order.id} /> : null}
+      {/* Service Request Buttons (Call for service / Request Bill) */}
+      <div className="pt-1">
+        <ServiceRequestButtons tableNumber={order.tableNumber} />
+      </div>
+
+      {/* Order feedback form (when served) */}
+      {order.status === 'served' && !hasFeedback ? (
+        <div className="pt-2">
+          <OrderFeedbackForm orderId={order.id} />
+        </div>
+      ) : null}
+
+      {/* Order more items from menu link */}
+      <div className="text-center pt-2 pb-10">
+        <Link
+          href={`/order?table=${order.tableNumber}`}
+          className="text-xs font-bold text-zinc-400 hover:text-[#ff6830] transition-colors"
+        >
+          + Order more items from menu
+        </Link>
+      </div>
     </div>
   );
 }
+
 
 

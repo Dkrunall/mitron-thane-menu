@@ -1,5 +1,4 @@
-import Link from 'next/link';
-import { OrderShell } from '@/components/order/OrderShell';
+import { OrderFrame } from '@/components/order/OrderShell';
 import { OrderMessage } from '@/components/order/OrderMessage';
 import { OrderStatusView } from '@/components/order/OrderStatusView';
 import { getOrderForTable } from '@/lib/data/orders';
@@ -39,14 +38,9 @@ export default async function OrderStatusPage({
   const runningTotal = await getTableRunningTotal(tableNumber, supabase);
 
   return (
-    <OrderShell tableNumber={tableNumber} title="Order status" showCartBar={false}>
+    <OrderFrame tableNumber={tableNumber} showCartBar={false}>
       <OrderStatusView initialOrder={order} hasFeedback={feedback !== null} runningTotal={runningTotal} />
-      <Link
-        href={`/order?table=${tableNumber}`}
-        className="mt-6 block w-full rounded-full border border-card-border py-3 text-center font-semibold"
-      >
-        Order more
-      </Link>
-    </OrderShell>
+    </OrderFrame>
   );
 }
+

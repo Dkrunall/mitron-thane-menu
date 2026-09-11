@@ -1,12 +1,17 @@
+import { notFound } from 'next/navigation';
 import { OrderFrame } from '@/components/order/OrderShell';
 import { OrderMessage } from '@/components/order/OrderMessage';
-import { CartReview } from '@/components/order/CartReview';
+import { ItemDetailView } from '@/components/order/ItemDetailView';
+import { getMenuItemById } from '@/lib/data/menu';
 
-export default async function CartPage({
+export default async function ItemPage({
+  params,
   searchParams,
 }: {
+  params: Promise<{ id: string }>;
   searchParams: Promise<{ table?: string }>;
 }) {
+  const { id } = await params;
   const { table } = await searchParams;
   const tableNumber = Number(table);
 
@@ -19,10 +24,18 @@ export default async function CartPage({
     );
   }
 
+  const result = await getMenuItemById(id);
+  if (!result) {
+    return notFound();
+  }
+
   return (
-    <OrderFrame tableNumber={tableNumber} showCartBar={false}>
-      <CartReview tableNumber={tableNumber} />
+    <OrderFrame tableNumber={tableNumber} showCartBar={true}>
+      <ItemDetailView
+        item={result.item}
+        categoryName={result.categoryName}
+        tableNumber={tableNumber}
+      />
     </OrderFrame>
   );
 }
-

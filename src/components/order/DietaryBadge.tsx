@@ -14,6 +14,24 @@ const LABEL: Record<DietaryType, string> = {
   seafood: 'Seafood',
 };
 
+/** Authentic Indian restaurant square FSSAI dietary indicator (veg/non-veg/egg). */
+export function FssaiDietaryIcon({ type }: { type: DietaryType | null }) {
+  if (!type) return null;
+  const isVeg = type === 'veg';
+  const isEgg = type === 'egg';
+  const borderColor = isVeg ? 'border-emerald-500' : isEgg ? 'border-amber-500' : 'border-rose-500';
+  const fillColor = isVeg ? 'bg-emerald-500' : isEgg ? 'bg-amber-500' : 'bg-rose-500';
+
+  return (
+    <span
+      className={`inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-[3px] border ${borderColor} p-[2px]`}
+      title={isVeg ? 'Vegetarian' : isEgg ? 'Contains Egg' : 'Non-Vegetarian'}
+    >
+      <span className={`h-1.5 w-1.5 rounded-full ${fillColor}`} />
+    </span>
+  );
+}
+
 /** The small minimal veg/non-veg style indicator used on menus. */
 export function DietaryBadge({ type }: { type: DietaryType | null }) {
   if (!type) return null;
@@ -36,5 +54,6 @@ export function AlcoholicBadge() {
     </span>
   );
 }
+
 
 

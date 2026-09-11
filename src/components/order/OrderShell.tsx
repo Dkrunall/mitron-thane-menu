@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
 import { CartProvider, useCart } from '@/lib/cart/CartContext';
 import { formatPrice } from '@/lib/format';
 
