@@ -1,10 +1,16 @@
-import type { NextConfig } from "next";
+import { dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const nextConfig: NextConfig = {
+// Plain JS (not next.config.ts) on purpose: loading a .ts config needs the
+// native SWC binary, which fails on hosts with glibc < 2.29 (e.g. Hostinger).
+const projectRoot = dirname(fileURLToPath(import.meta.url));
+
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   turbopack: {
     // Pin the workspace root to this project — otherwise Turbopack can pick
     // up an unrelated package-lock.json from a parent directory.
-    root: __dirname,
+    root: projectRoot,
   },
   experimental: {
     // Turbopack's persistent build cache (.next/cache/turbopack) is on by
