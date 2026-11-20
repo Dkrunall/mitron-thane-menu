@@ -16,7 +16,7 @@ export interface AdminOrderItem {
 
 export interface AdminOrder {
   id: string;
-  tableNumber: number;
+  tableNumber: string;
   status: OrderStatus;
   createdAt: string;
   servedAt: string | null;
@@ -59,7 +59,7 @@ export async function fetchActiveOrders(supabase: SupabaseClient<Database>): Pro
 }
 
 export interface TableGroup {
-  tableNumber: number;
+  tableNumber: string;
   /** This table's active orders split into sittings (see lib/sittings.ts)
    *  — usually just one, but a table that ordered, went quiet for 90+
    *  minutes, then ordered again shows as two, oldest sitting first. */
@@ -70,8 +70,8 @@ export interface TableGroup {
  *  order — tables with the longest-waiting order come first), then splits
  *  each table's orders into sittings. */
 export function groupOrdersByTable(orders: AdminOrder[]): TableGroup[] {
-  const order: number[] = [];
-  const byTable = new Map<number, AdminOrder[]>();
+  const order: string[] = [];
+  const byTable = new Map<string, AdminOrder[]>();
   for (const o of orders) {
     if (!byTable.has(o.tableNumber)) {
       byTable.set(o.tableNumber, []);

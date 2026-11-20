@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { ActionError } from '@/lib/actions/errors';
 import { requireManager } from '@/lib/actions/requireManager';
-import type { DietaryType } from '@/types/database';
+import type { BeverageMenu, DietaryType } from '@/types/database';
 
 const GENERIC_FAILURE_MESSAGE = 'Something went wrong saving your changes. Please try again.';
 
@@ -36,6 +36,13 @@ export interface CategoryInput {
   section: string;
   sortOrder: number;
   imageUrl: string;
+  /** null = always shown (Food); otherwise only while that beverage menu is live. */
+  beverageMenu: BeverageMenu | null;
+}
+
+function validBeverageMenu(value: BeverageMenu | null): BeverageMenu | null {
+  if (value === null || value === 'all_day' || value === 'party') return value;
+  throw new ActionError('Choose which menu this category belongs to.');
 }
 
 export async function createCategory(input: CategoryInput) {
@@ -47,6 +54,7 @@ export async function createCategory(input: CategoryInput) {
       section: input.section.trim(),
       sort_order: input.sortOrder,
       image_url: input.imageUrl.trim() || null,
+      beverage_menu: validBeverageMenu(input.beverageMenu),
     });
     if (error) throw error;
     revalidatePath('/admin/menu');
@@ -65,6 +73,7 @@ export async function updateCategory(id: string, input: CategoryInput) {
         section: input.section.trim(),
         sort_order: input.sortOrder,
         image_url: input.imageUrl.trim() || null,
+        beverage_menu: validBeverageMenu(input.beverageMenu),
       })
       .eq('id', id);
     if (error) throw error;
@@ -90,6 +99,21 @@ export async function deleteCategory(id: string) {
     }
     revalidatePath('/admin/menu');
     revalidatePath('/order');
+  });
+}
+
+/** The admin switch: Party beverage menu on (All Day drinks hidden) or off. */
+export async function setPartyMenuEnabled(enabled: boolean) {
+  return withSafeErrors(async () => {
+    if (typeof enabled !== 'boolean') throw new ActionError('Invalid setting.');
+    const supabase = await createClient();
+    const { error } = await supabase
+      .from('app_settings')
+      .update({ party_menu_enabled: enabled, updated_at: new Date().toISOString() })
+      .eq('id', true);
+    if (error) throw error;
+    revalidatePath('/admin/menu');
+    revalidatePath('/order', 'layout');
   });
 }
 

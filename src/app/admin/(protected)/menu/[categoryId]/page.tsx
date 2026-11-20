@@ -35,6 +35,7 @@ export default async function AdminCategoryPage({
           section: category.section,
           sortOrder: category.sortOrder,
           imageUrl: category.imageUrl ?? '',
+          beverageMenu: category.beverageMenu,
         }}
       />
 

@@ -1,5 +1,8 @@
+import { normalizeTableLabel } from '@/lib/tableLabel';
 import { getActiveTableByNumber } from '@/lib/data/tables';
 import { getMenuSections } from '@/lib/data/menu';
+import { filterSectionsForBeverageMenu, getActiveBeverageMenu } from '@/lib/data/beverageMenu';
+import { createClient } from '@/lib/supabase/server';
 import { OrderMessage } from '@/components/order/OrderMessage';
 import { MenuBrowser } from '@/components/order/MenuBrowser';
 
@@ -9,9 +12,9 @@ export default async function OrderPage({
   searchParams: Promise<{ table?: string }>;
 }) {
   const { table } = await searchParams;
-  const tableNumber = Number(table);
+  const tableNumber = normalizeTableLabel(table);
 
-  if (!table || !Number.isInteger(tableNumber) || tableNumber <= 0) {
+  if (!tableNumber) {
     return (
       <OrderMessage
         title="Scan the QR code at your table"
@@ -20,7 +23,14 @@ export default async function OrderPage({
     );
   }
 
-  const activeTable = await getActiveTableByNumber(tableNumber);
+  // Run both queries in parallel instead of one after the other.
+  const supabase = await createClient();
+  const [activeTable, allSections, beverageMenu] = await Promise.all([
+    getActiveTableByNumber(tableNumber),
+    getMenuSections(),
+    getActiveBeverageMenu(supabase),
+  ]);
+  const sections = filterSectionsForBeverageMenu(allSections, beverageMenu);
   if (!activeTable) {
     return (
       <OrderMessage
@@ -29,8 +39,6 @@ export default async function OrderPage({
       />
     );
   }
-
-  const sections = await getMenuSections();
 
   return <MenuBrowser tableNumber={tableNumber} sections={sections} />;
 }

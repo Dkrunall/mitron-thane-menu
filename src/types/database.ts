@@ -14,6 +14,8 @@ export type AdminRole = 'manager' | 'kitchen';
 export type DietaryType = 'veg' | 'non_veg' | 'egg' | 'seafood';
 export type ServiceRequestType = 'call_waiter' | 'request_bill';
 export type ServiceRequestStatus = 'pending' | 'acknowledged';
+/** Which beverage menu a category belongs to; null = always shown (Food). */
+export type BeverageMenu = 'all_day' | 'party';
 
 export interface Database {
   public: {
@@ -21,14 +23,18 @@ export interface Database {
       tables: {
         Row: {
           id: string;
-          table_number: number;
+          table_number: string;
+          section: string;
+          sort_order: number;
           qr_code_url: string | null;
           is_active: boolean;
           created_at: string;
         };
         Insert: {
           id?: string;
-          table_number: number;
+          table_number: string;
+          section?: string;
+          sort_order?: number;
           qr_code_url?: string | null;
           is_active?: boolean;
           created_at?: string;
@@ -43,6 +49,7 @@ export interface Database {
           section: string;
           sort_order: number;
           image_url: string | null;
+          beverage_menu: BeverageMenu | null;
           created_at: string;
         };
         Insert: {
@@ -51,6 +58,7 @@ export interface Database {
           section: string;
           sort_order?: number;
           image_url?: string | null;
+          beverage_menu?: BeverageMenu | null;
           created_at?: string;
         };
         Update: Partial<Database['public']['Tables']['categories']['Insert']>;
@@ -353,6 +361,20 @@ export interface Database {
             referencedColumns: ['id'];
           },
         ];
+      };
+      app_settings: {
+        Row: {
+          id: boolean;
+          party_menu_enabled: boolean;
+          updated_at: string;
+        };
+        Insert: {
+          id?: boolean;
+          party_menu_enabled?: boolean;
+          updated_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['app_settings']['Insert']>;
+        Relationships: [];
       };
     };
     Views: Record<string, never>;

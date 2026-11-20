@@ -1,4 +1,4 @@
-import type { DietaryType } from './database';
+import type { BeverageMenu, DietaryType } from './database';
 
 export interface MenuItemVariant {
   id: string;
@@ -31,6 +31,9 @@ export interface MenuCategory {
   /** Representative photo for this subcategory (Whiskey, Cold Mezze, ...),
    *  distinct from any individual dish/drink's own image. */
   imageUrl: string | null;
+  /** 'all_day' / 'party' for drinks categories (only the active one is shown
+   *  to customers); null for Food, which is always shown. */
+  beverageMenu: BeverageMenu | null;
   items: MenuItem[];
 }
 

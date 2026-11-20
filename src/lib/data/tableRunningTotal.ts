@@ -22,7 +22,7 @@ export interface TableRunningTotal {
  * client-side refetches share one implementation.
  */
 export async function getTableRunningTotal(
-  tableNumber: number,
+  tableNumber: string,
   supabase: SupabaseClient<Database>
 ): Promise<TableRunningTotal> {
   const { data, error } = await supabase

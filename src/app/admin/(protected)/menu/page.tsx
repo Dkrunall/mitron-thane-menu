@@ -1,11 +1,30 @@
 import { getMenuSections } from '@/lib/data/menu';
+import { getActiveBeverageMenu } from '@/lib/data/beverageMenu';
+import { createClient } from '@/lib/supabase/server';
 import { requireManagerOrRedirect } from '@/lib/actions/requireManager';
 import { CategoryCard } from '@/components/admin/CategoryCard';
 import { CategoryForm } from '@/components/admin/CategoryForm';
+import { BeverageMenuSwitch } from '@/components/admin/BeverageMenuSwitch';
+import type { BeverageMenu } from '@/types/database';
+import type { MenuSection } from '@/types/menu';
+
+const MENU_GROUPS: { menu: BeverageMenu | null; title: string | null }[] = [
+  { menu: null, title: null },
+  { menu: 'all_day', title: 'All Day Beverage Menu' },
+  { menu: 'party', title: 'Party Beverage Menu' },
+];
+
+/** Keeps only the categories that belong to `menu`, dropping empty sections. */
+function sectionsForMenu(sections: MenuSection[], menu: BeverageMenu | null): MenuSection[] {
+  return sections
+    .map((s) => ({ ...s, categories: s.categories.filter((c) => c.beverageMenu === menu) }))
+    .filter((s) => s.categories.length > 0);
+}
 
 export default async function AdminMenuPage() {
   await requireManagerOrRedirect();
-  const sections = await getMenuSections();
+  const supabase = await createClient();
+  const [sections, activeMenu] = await Promise.all([getMenuSections(), getActiveBeverageMenu(supabase)]);
   const totalItems = sections.reduce(
     (n, s) => n + s.categories.reduce((m, c) => m + c.items.length, 0),
     0
@@ -30,31 +49,60 @@ export default async function AdminMenuPage() {
         </div>
       </div>
 
+      <BeverageMenuSwitch partyEnabled={activeMenu === 'party'} />
+
       <div className="rounded-2xl border border-white/10 bg-[#121215] p-4 sm:p-5 shadow-xl">
         <h2 className="mb-3 text-xs font-bold tracking-wider text-[#ff8a3d] uppercase">Create New Category</h2>
         <CategoryForm />
       </div>
 
-      {sections.map((section) => (
-        <div key={section.section} className="space-y-3 pt-2">
-          <div className="flex items-center gap-2.5">
-            <span className="h-2 w-2 rounded-full bg-[#ff8a3d] shadow-[0_0_6px_#ff8a3d]" />
-            <h2 className="display text-xl tracking-tight text-white">{section.section}</h2>
-            <span className="h-px flex-1 bg-white/5" />
+      {MENU_GROUPS.map(({ menu, title }) => {
+        const groupSections = sectionsForMenu(sections, menu);
+        if (groupSections.length === 0) return null;
+        const isLive = menu === null || menu === activeMenu;
+
+        return (
+          <div key={menu ?? 'always'} className="space-y-6">
+            {title ? (
+              <div className="flex flex-wrap items-center gap-3 border-t border-white/10 pt-6">
+                <h2 className="display text-2xl sm:text-3xl tracking-tight text-white">{title}</h2>
+                <span
+                  className={`rounded-full px-3 py-1 text-[11px] font-extrabold uppercase tracking-wider ${
+                    isLive
+                      ? 'border border-emerald-500/40 bg-emerald-500/10 text-emerald-400'
+                      : 'border border-white/10 bg-white/[0.04] text-zinc-500'
+                  }`}
+                >
+                  {isLive ? 'Live for customers' : 'Hidden from customers'}
+                </span>
+              </div>
+            ) : null}
+
+            <div className={isLive ? 'space-y-6' : 'space-y-6 opacity-60'}>
+              {groupSections.map((section) => (
+                <div key={section.section} className="space-y-3 pt-2">
+                  <div className="flex items-center gap-2.5">
+                    <span className="h-2 w-2 rounded-full bg-[#ff8a3d] shadow-[0_0_6px_#ff8a3d]" />
+                    <h3 className="display text-xl tracking-tight text-white">{section.section}</h3>
+                    <span className="h-px flex-1 bg-white/5" />
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                    {section.categories.map((cat) => (
+                      <CategoryCard
+                        key={cat.id}
+                        categoryId={cat.id}
+                        name={cat.name}
+                        itemCount={cat.items.length}
+                        imageUrl={cat.imageUrl}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-            {section.categories.map((cat) => (
-              <CategoryCard
-                key={cat.id}
-                categoryId={cat.id}
-                name={cat.name}
-                itemCount={cat.items.length}
-                imageUrl={cat.imageUrl}
-              />
-            ))}
-          </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

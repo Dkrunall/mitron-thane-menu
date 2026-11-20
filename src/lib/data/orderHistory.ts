@@ -12,7 +12,7 @@ export interface OrderHistoryItem {
 
 export interface OrderHistoryEntry {
   id: string;
-  tableNumber: number;
+  tableNumber: string;
   status: OrderStatus;
   createdAt: string;
   servedAt: string | null;
@@ -23,7 +23,7 @@ export interface OrderHistoryEntry {
 export interface OrderHistoryFilter {
   /** 'YYYY-MM-DD' in the server's local date, or undefined for all dates. */
   date?: string;
-  tableNumber?: number;
+  tableNumber?: string;
 }
 
 /**

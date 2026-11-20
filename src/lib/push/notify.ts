@@ -22,7 +22,7 @@ if (pushConfigured) {
  * — the in-tab alert still covers that case, so this is a pure
  * enhancement, never a hard dependency.
  */
-async function sendOrderReadyPush(supabase: SupabaseClient<Database>, orderId: string, tableNumber: number) {
+async function sendOrderReadyPush(supabase: SupabaseClient<Database>, orderId: string, tableNumber: string) {
   if (!pushConfigured) return;
 
   const { data: subs } = await supabase

@@ -1,8 +1,11 @@
+import { normalizeTableLabel } from '@/lib/tableLabel';
 import { notFound } from 'next/navigation';
 import { OrderFrame } from '@/components/order/OrderShell';
 import { OrderMessage } from '@/components/order/OrderMessage';
 import { ItemDetailView } from '@/components/order/ItemDetailView';
 import { getMenuItemById } from '@/lib/data/menu';
+import { getActiveBeverageMenu, isCategoryVisible } from '@/lib/data/beverageMenu';
+import { createClient } from '@/lib/supabase/server';
 
 export default async function ItemPage({
   params,
@@ -13,9 +16,9 @@ export default async function ItemPage({
 }) {
   const { id } = await params;
   const { table } = await searchParams;
-  const tableNumber = Number(table);
+  const tableNumber = normalizeTableLabel(table);
 
-  if (!table || !Number.isInteger(tableNumber) || tableNumber <= 0) {
+  if (!tableNumber) {
     return (
       <OrderMessage
         title="Scan the QR code at your table"
@@ -24,8 +27,10 @@ export default async function ItemPage({
     );
   }
 
-  const result = await getMenuItemById(id);
-  if (!result) {
+  const supabase = await createClient();
+  const [result, activeMenu] = await Promise.all([getMenuItemById(id), getActiveBeverageMenu(supabase)]);
+  // Drinks from the beverage menu that's switched off aren't orderable.
+  if (!result || !isCategoryVisible(result.beverageMenu, activeMenu)) {
     return notFound();
   }
 

@@ -18,7 +18,7 @@ export function ItemDetailView({
 }: {
   item: MenuItem;
   categoryName: string;
-  tableNumber: number;
+  tableNumber: string;
 }) {
   const router = useRouter();
   const { addLine } = useCart();

@@ -1,3 +1,4 @@
+import { normalizeTableLabel } from '@/lib/tableLabel';
 import { OrderFrame } from '@/components/order/OrderShell';
 import { OrderMessage } from '@/components/order/OrderMessage';
 import { OrderStatusView } from '@/components/order/OrderStatusView';
@@ -12,9 +13,9 @@ export default async function OrderStatusPage({
   searchParams: Promise<{ table?: string; order?: string }>;
 }) {
   const { table, order: orderId } = await searchParams;
-  const tableNumber = Number(table);
+  const tableNumber = normalizeTableLabel(table);
 
-  if (!table || !Number.isInteger(tableNumber) || tableNumber <= 0 || !orderId) {
+  if (!tableNumber || !orderId) {
     return (
       <OrderMessage
         title="Scan the QR code at your table"

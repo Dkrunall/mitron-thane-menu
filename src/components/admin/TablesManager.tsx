@@ -1,26 +1,38 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { bulkCreateTables } from '@/lib/actions/tables';
+import { createTable } from '@/lib/actions/tables';
 import { downloadTableQrPdf } from '@/lib/qr/generatePdf';
 import { TableQRCard } from './TableQRCard';
 import type { AdminTable } from '@/lib/data/adminTables';
+import { groupTablesBySection, TABLE_SECTION_ORDER } from '@/lib/tableSections';
 import { DocumentIcon, TableIcon, WarningIcon } from '@/components/icons';
 
+const inputClass =
+  'rounded-xl border border-white/10 bg-black/60 px-3.5 py-2 text-sm font-bold text-zinc-100 outline-none focus:border-[#ff8a3d] focus:ring-1 focus:ring-[#ff8a3d]/40 transition-all';
+
 export function TablesManager({ tables }: { tables: AdminTable[] }) {
-  const [count, setCount] = useState(10);
+  const sections = groupTablesBySection(tables);
+  const sectionNames = [
+    ...TABLE_SECTION_ORDER,
+    ...sections.map((s) => s.section).filter((s) => !TABLE_SECTION_ORDER.includes(s) && s !== 'Retired'),
+  ];
+
+  const [label, setLabel] = useState('');
+  const [section, setSection] = useState(sectionNames[0]);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [isExportingPdf, setIsExportingPdf] = useState(false);
 
-  function handleBulkCreate(e: React.FormEvent) {
+  function handleCreate(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     startTransition(async () => {
       try {
-        await bulkCreateTables(count);
+        await createTable(label, section);
+        setLabel('');
       } catch (err) {
-        setError(err instanceof Error && err.message ? err.message : 'Failed to create tables.');
+        setError(err instanceof Error && err.message ? err.message : 'Failed to add table.');
       }
     });
   }
@@ -28,7 +40,11 @@ export function TablesManager({ tables }: { tables: AdminTable[] }) {
   async function handleExportPdf() {
     setIsExportingPdf(true);
     try {
-      await downloadTableQrPdf(tables.filter((t) => t.isActive).map((t) => t.tableNumber));
+      await downloadTableQrPdf(
+        sections.flatMap((s) =>
+          s.tables.filter((t) => t.isActive).map((t) => ({ tableNumber: t.tableNumber, section: s.section }))
+        )
+      );
     } finally {
       setIsExportingPdf(false);
     }
@@ -37,26 +53,46 @@ export function TablesManager({ tables }: { tables: AdminTable[] }) {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-white/10 bg-[#121215] p-4 sm:p-5 shadow-xl">
-        <form onSubmit={handleBulkCreate} className="flex items-end gap-3 flex-wrap">
+        <form onSubmit={handleCreate} className="flex items-end gap-3 flex-wrap">
           <div>
-            <label className="mb-1.5 block text-xs font-semibold text-zinc-300">
-              Bulk Create Tables
+            <label htmlFor="new-table-label" className="mb-1.5 block text-xs font-semibold text-zinc-300">
+              Table label
             </label>
             <input
-              type="number"
-              min={1}
-              max={500}
-              value={count}
-              onChange={(e) => setCount(Number(e.target.value))}
-              className="w-28 rounded-xl border border-white/10 bg-black/60 px-3.5 py-2 text-sm font-bold text-zinc-100 outline-none focus:border-[#ff8a3d] focus:ring-1 focus:ring-[#ff8a3d]/40 transition-all"
+              id="new-table-label"
+              type="text"
+              required
+              maxLength={16}
+              autoCapitalize="characters"
+              placeholder="e.g. M13"
+              value={label}
+              onChange={(e) => setLabel(e.target.value.toUpperCase())}
+              className={`w-28 placeholder-zinc-500 ${inputClass}`}
             />
+          </div>
+          <div>
+            <label htmlFor="new-table-section" className="mb-1.5 block text-xs font-semibold text-zinc-300">
+              Section
+            </label>
+            <select
+              id="new-table-section"
+              value={section}
+              onChange={(e) => setSection(e.target.value)}
+              className={inputClass}
+            >
+              {sectionNames.map((name) => (
+                <option key={name} value={name}>
+                  {name}
+                </option>
+              ))}
+            </select>
           </div>
           <button
             type="submit"
-            disabled={isPending}
+            disabled={isPending || !label.trim()}
             className="gold-gradient-btn rounded-xl px-4 py-2.5 text-xs font-bold shadow-md hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 transition-all cursor-pointer"
           >
-            {isPending ? 'Generating...' : `+ Add ${count} Table${count === 1 ? '' : 's'}`}
+            {isPending ? 'Adding...' : '+ Add Table'}
           </button>
         </form>
 
@@ -84,16 +120,25 @@ export function TablesManager({ tables }: { tables: AdminTable[] }) {
             <TableIcon className="h-8 w-8" />
           </div>
           <h2 className="text-lg font-bold text-zinc-100">No Tables Configured</h2>
-          <p className="text-xs text-zinc-400">Generate dining tables above to create table QR codes.</p>
+          <p className="text-xs text-zinc-400">Add tables above to create table QR codes.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-          {tables.map((table) => (
-            <TableQRCard key={table.id} table={table} />
-          ))}
-        </div>
+        sections.map(({ section: name, tables: sectionTables }) => (
+          <section key={name} className="space-y-3">
+            <div className="flex items-baseline gap-2">
+              <h2 className="text-sm font-extrabold uppercase tracking-wider text-[#ff8a3d]">{name}</h2>
+              <span className="text-xs font-semibold text-zinc-500">
+                {sectionTables.length} table{sectionTables.length === 1 ? '' : 's'}
+              </span>
+            </div>
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+              {sectionTables.map((table) => (
+                <TableQRCard key={table.id} table={table} />
+              ))}
+            </div>
+          </section>
+        ))
       )}
     </div>
   );
 }
-

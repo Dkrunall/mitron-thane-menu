@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { ActionError } from '@/lib/actions/errors';
 import { requireManager } from '@/lib/actions/requireManager';
+import { normalizeTableLabel } from '@/lib/tableLabel';
 
 const GENERIC_FAILURE_MESSAGE = 'Something went wrong. Please try again.';
 
@@ -26,31 +27,44 @@ async function withSafeErrors<T>(fn: () => Promise<T>): Promise<T> {
   }
 }
 
-/** Creates `count` new tables, numbered right after the current highest table number. */
-export async function bulkCreateTables(count: number) {
+const UNIQUE_VIOLATION = '23505';
+
+/** Adds one table with a text label (e.g. "M13") to a floor section,
+ *  placed after that section's existing tables. */
+export async function createTable(rawLabel: string, rawSection: string) {
   return withSafeErrors(async () => {
-    if (!Number.isInteger(count) || count <= 0 || count > 500) {
-      throw new ActionError('Enter a number of tables between 1 and 500.');
+    const label = normalizeTableLabel(rawLabel);
+    if (!label) {
+      throw new ActionError('Table label must be 1-16 letters, numbers or dashes (e.g. M13, OD5).');
+    }
+    const section = rawSection.trim();
+    if (!section || section.length > 40) {
+      throw new ActionError('Choose a section for the table.');
     }
     const supabase = await createClient();
 
-    const { data: maxRow, error: maxError } = await supabase
+    const { data: lastRow, error: lastError } = await supabase
       .from('tables')
-      .select('table_number')
-      .order('table_number', { ascending: false })
+      .select('sort_order')
+      .eq('section', section)
+      .order('sort_order', { ascending: false })
       .limit(1)
       .maybeSingle();
-    if (maxError) throw maxError;
+    if (lastError) throw lastError;
 
-    const start = (maxRow?.table_number ?? 0) + 1;
-    const rows = Array.from({ length: count }, (_, i) => ({
-      table_number: start + i,
-      qr_code_url: `/order?table=${start + i}`,
+    const { error } = await supabase.from('tables').insert({
+      table_number: label,
+      section,
+      sort_order: (lastRow?.sort_order ?? 0) + 1,
+      qr_code_url: `/order?table=${label}`,
       is_active: true,
-    }));
-
-    const { error } = await supabase.from('tables').insert(rows);
-    if (error) throw error;
+    });
+    if (error) {
+      if (error.code === UNIQUE_VIOLATION) {
+        throw new ActionError(`Table ${label} already exists.`);
+      }
+      throw error;
+    }
 
     revalidatePath('/admin/tables');
   });

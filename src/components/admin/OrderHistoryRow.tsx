@@ -24,7 +24,7 @@ export function OrderHistoryRow({ order, sittingLabel }: { order: OrderHistoryEn
       >
         <div className="flex items-center gap-3 flex-wrap">
           <span className="font-bold text-white text-base">
-            Table {order.tableNumber < 10 ? `0${order.tableNumber}` : order.tableNumber}
+            Table {order.tableNumber}
           </span>
           {sittingLabel ? (
             <span className="rounded-full border border-sky-500/40 bg-sky-500/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-sky-300">

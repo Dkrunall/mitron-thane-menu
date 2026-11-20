@@ -14,7 +14,7 @@ type ServiceRequestRow = Database['public']['Tables']['service_requests']['Row']
  * the pending state the instant anyone (including staff, via Acknowledge)
  * changes it, so nobody double-taps a request that's already in flight.
  */
-export function ServiceRequestButtons({ tableNumber }: { tableNumber: number }) {
+export function ServiceRequestButtons({ tableNumber }: { tableNumber: string }) {
   const [pending, setPending] = useState<Record<ServiceRequestType, boolean>>({
     call_waiter: false,
     request_bill: false,

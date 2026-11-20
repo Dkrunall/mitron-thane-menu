@@ -3,7 +3,7 @@ import { jsPDF } from 'jspdf';
 
 /** Builds a printable PDF with one QR code + table label per cell, 3x4 grid per page,
  *  and triggers a browser download. Runs client-side only (uses `window.location.origin`). */
-export async function downloadTableQrPdf(tableNumbers: number[]) {
+export async function downloadTableQrPdf(tables: { tableNumber: string; section: string }[]) {
   const origin = window.location.origin;
   const doc = new jsPDF({ unit: 'mm', format: 'a4' });
 
@@ -17,7 +17,7 @@ export async function downloadTableQrPdf(tableNumbers: number[]) {
   const cellH = (pageHeight - marginY * 2) / rows;
   const qrSize = Math.min(cellW, cellH) * 0.6;
 
-  for (let i = 0; i < tableNumbers.length; i++) {
+  for (let i = 0; i < tables.length; i++) {
     const indexOnPage = i % (cols * rows);
     if (indexOnPage === 0 && i !== 0) doc.addPage();
 
@@ -26,8 +26,8 @@ export async function downloadTableQrPdf(tableNumbers: number[]) {
     const cellX = marginX + col * cellW;
     const cellY = marginY + row * cellH;
 
-    const tableNumber = tableNumbers[i];
-    const url = `${origin}/order?table=${tableNumber}`;
+    const { tableNumber, section } = tables[i];
+    const url = `${origin}/order?table=${encodeURIComponent(tableNumber)}`;
     const dataUrl = await QRCode.toDataURL(url, { margin: 1, width: 256 });
 
     const qrX = cellX + (cellW - qrSize) / 2;
@@ -43,8 +43,9 @@ export async function downloadTableQrPdf(tableNumbers: number[]) {
 
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
-    doc.text('Scan to view menu & order', cellX + cellW / 2, qrY + qrSize + 11, { align: 'center' });
+    doc.text(section, cellX + cellW / 2, qrY + qrSize + 11, { align: 'center' });
+    doc.text('Scan to view menu & order', cellX + cellW / 2, qrY + qrSize + 15, { align: 'center' });
   }
 
-  doc.save(`opa-table-qr-codes.pdf`);
+  doc.save(`mitron-table-qr-codes.pdf`);
 }

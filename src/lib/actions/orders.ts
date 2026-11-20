@@ -3,6 +3,8 @@
 import { redirect, unstable_rethrow } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { ActionError } from '@/lib/actions/errors';
+import { getActiveBeverageMenu, isCategoryVisible } from '@/lib/data/beverageMenu';
+import type { BeverageMenu } from '@/types/database';
 
 const GENERIC_FAILURE_MESSAGE = 'Something went wrong placing your order. Please try again.';
 
@@ -24,7 +26,7 @@ const GENERIC_FAILURE_MESSAGE = 'Something went wrong placing your order. Please
  * and swapped for a generic message here rather than leaking internals —
  * only our own ActionError messages are meant to reach the customer.
  */
-export async function placeOrder(tableNumber: number) {
+export async function placeOrder(tableNumber: string) {
   try {
     await placeOrderUnsafe(tableNumber);
   } catch (err) {
@@ -35,7 +37,7 @@ export async function placeOrder(tableNumber: number) {
   }
 }
 
-async function placeOrderUnsafe(tableNumber: number) {
+async function placeOrderUnsafe(tableNumber: string) {
   const supabase = await createClient();
 
   const { data: table, error: tableError } = await supabase
@@ -57,10 +59,10 @@ async function placeOrderUnsafe(tableNumber: number) {
   const menuItemIds = [...new Set(cartRows.map((l) => l.menu_item_id))];
   const variantIds = [...new Set(cartRows.map((l) => l.variant_id).filter((id): id is string => !!id))];
 
-  const { data: menuItems, error: itemsError } = await supabase
-    .from('menu_items')
-    .select('id, price, is_available')
-    .in('id', menuItemIds);
+  const [{ data: menuItems, error: itemsError }, activeMenu] = await Promise.all([
+    supabase.from('menu_items').select('id, price, is_available, categories ( beverage_menu )').in('id', menuItemIds),
+    getActiveBeverageMenu(supabase),
+  ]);
   if (itemsError) throw itemsError;
 
   const { data: variants, error: variantsError } = variantIds.length
@@ -83,6 +85,12 @@ async function placeOrderUnsafe(tableNumber: number) {
     const item = itemById.get(line.menu_item_id);
     if (!item || !item.is_available) {
       throw new ActionError('One of the items in your cart is no longer available. Please review your cart.');
+    }
+    // The drinks menu may have been switched (All Day <-> Party) after this
+    // line was added; its old price must not be charged.
+    const categoryMenu = (item.categories as unknown as { beverage_menu: BeverageMenu | null } | null)?.beverage_menu ?? null;
+    if (!isCategoryVisible(categoryMenu, activeMenu)) {
+      throw new ActionError('The drinks menu has changed since you added some drinks. Please remove them from your cart and add them again from the current menu.');
     }
     let price = Number(item.price);
     if (line.variant_id) {

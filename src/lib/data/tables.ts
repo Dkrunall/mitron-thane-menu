@@ -2,12 +2,12 @@ import { createClient } from '@/lib/supabase/server';
 
 export interface DiningTable {
   id: string;
-  tableNumber: number;
+  tableNumber: string;
   isActive: boolean;
 }
 
 /** Looks up an active table by its number, e.g. from ?table=7 in the QR URL. */
-export async function getActiveTableByNumber(tableNumber: number): Promise<DiningTable | null> {
+export async function getActiveTableByNumber(tableNumber: string): Promise<DiningTable | null> {
   const supabase = await createClient();
 
   const { data, error } = await supabase

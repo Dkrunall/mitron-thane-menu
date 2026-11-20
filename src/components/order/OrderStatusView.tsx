@@ -117,7 +117,7 @@ export function OrderStatusView({
   const [notificationPermission, setNotificationPermission] = useState<NotificationPermission | 'unsupported' | null>(null);
   const [liveRunningTotal, setLiveRunningTotal] = useState(runningTotal);
 
-  const tableLabel = `T-${order.tableNumber < 10 ? `0${order.tableNumber}` : order.tableNumber}`;
+  const tableLabel = `T-${order.tableNumber}`;
   const shortOrderId = order.id.replace(/-/g, '').slice(0, 4).toUpperCase();
 
   useEffect(() => {

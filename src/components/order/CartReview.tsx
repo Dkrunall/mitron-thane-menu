@@ -59,12 +59,12 @@ function GuestNameEditor({
   );
 }
 
-export function CartReview({ tableNumber }: { tableNumber: number }) {
+export function CartReview({ tableNumber }: { tableNumber: string }) {
   const { lines, updateQuantity, removeLine, totalPrice, guestId, guestName, setGuestName } = useCart();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
-  const tableLabel = `T-${tableNumber < 10 ? `0${tableNumber}` : tableNumber}`;
+  const tableLabel = `T-${tableNumber}`;
   const taxes = Math.round(totalPrice * 0.05);
   const finalTotal = totalPrice + taxes;
   const guestCount = new Set(lines.map((l) => l.guestId)).size;

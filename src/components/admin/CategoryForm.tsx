@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { createCategory, updateCategory, type CategoryInput } from '@/lib/actions/menu';
+import type { BeverageMenu } from '@/types/database';
 
 export function CategoryForm({
   initial,
@@ -16,13 +17,14 @@ export function CategoryForm({
   const [section, setSection] = useState(initial?.section ?? '');
   const [sortOrder, setSortOrder] = useState(initial?.sortOrder ?? 0);
   const [imageUrl, setImageUrl] = useState(initial?.imageUrl ?? '');
+  const [beverageMenu, setBeverageMenu] = useState<BeverageMenu | null>(initial?.beverageMenu ?? null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    const input: CategoryInput = { name, section, sortOrder, imageUrl };
+    const input: CategoryInput = { name, section, sortOrder, imageUrl, beverageMenu };
     startTransition(async () => {
       try {
         if (categoryId) await updateCategory(categoryId, input);
@@ -32,6 +34,7 @@ export function CategoryForm({
           setSection('');
           setSortOrder(0);
           setImageUrl('');
+          setBeverageMenu(null);
         }
         onDone?.();
       } catch (err) {
@@ -61,6 +64,21 @@ export function CategoryForm({
           placeholder="Food, Bar, Barista"
           className="rounded-xl border border-white/10 bg-black/60 px-3.5 py-2 text-sm text-zinc-100 placeholder-zinc-500 outline-none focus:border-[#ff8a3d] focus:ring-1 focus:ring-[#ff8a3d]/40 transition-all"
         />
+      </div>
+      <div>
+        <label htmlFor={`${categoryId ?? 'new'}-beverage-menu`} className="mb-1.5 block text-xs font-semibold text-zinc-300">
+          Menu
+        </label>
+        <select
+          id={`${categoryId ?? 'new'}-beverage-menu`}
+          value={beverageMenu ?? 'always'}
+          onChange={(e) => setBeverageMenu(e.target.value === 'always' ? null : (e.target.value as BeverageMenu))}
+          className="rounded-xl border border-white/10 bg-black/60 px-3.5 py-2 text-sm text-zinc-100 outline-none focus:border-[#ff8a3d] focus:ring-1 focus:ring-[#ff8a3d]/40 transition-all"
+        >
+          <option value="always">Always shown (Food)</option>
+          <option value="all_day">All Day drinks</option>
+          <option value="party">Party drinks</option>
+        </select>
       </div>
       <div>
         <label className="mb-1.5 block text-xs font-semibold text-zinc-300">Sort order</label>

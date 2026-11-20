@@ -58,11 +58,11 @@ function rowToLine(row: CartItemRow): CartLine {
   };
 }
 
-function guestIdKey(tableNumber: number) {
+function guestIdKey(tableNumber: string) {
   return `opa-guest-id-table-${tableNumber}`;
 }
 
-function guestNameKey(tableNumber: number) {
+function guestNameKey(tableNumber: string) {
   return `opa-guest-name-table-${tableNumber}`;
 }
 
@@ -70,7 +70,7 @@ function guestNameKey(tableNumber: number) {
  *  visit — a stable random id plus a friendly default name ("Guest 42") so
  *  lines this device adds are attributed distinctly from other guests at
  *  the same table without requiring anyone to sign in or type anything. */
-function loadOrCreateGuestIdentity(tableNumber: number): { guestId: string; guestName: string } {
+function loadOrCreateGuestIdentity(tableNumber: string): { guestId: string; guestName: string } {
   let guestId = window.localStorage.getItem(guestIdKey(tableNumber));
   if (!guestId) {
     guestId = crypto.randomUUID();
@@ -97,7 +97,7 @@ export function CartProvider({
   tableNumber,
   children,
 }: {
-  tableNumber: number;
+  tableNumber: string;
   children: React.ReactNode;
 }) {
   const [identity, setIdentity] = useState<{ guestId: string; guestName: string } | null>(null);

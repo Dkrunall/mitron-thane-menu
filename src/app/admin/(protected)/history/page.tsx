@@ -1,7 +1,9 @@
+import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { fetchOrderHistory } from '@/lib/data/orderHistory';
 import { requireManagerOrRedirect } from '@/lib/actions/requireManager';
 import { OrderHistoryList } from '@/components/admin/OrderHistoryList';
+import { normalizeTableLabel } from '@/lib/tableLabel';
 
 export default async function AdminHistoryPage({
   searchParams,
@@ -10,10 +12,9 @@ export default async function AdminHistoryPage({
 }) {
   await requireManagerOrRedirect();
   const { date, table } = await searchParams;
-  const tableNumber = table ? Number(table) : undefined;
   const filter = {
     date: date || undefined,
-    tableNumber: tableNumber && Number.isInteger(tableNumber) && tableNumber > 0 ? tableNumber : undefined,
+    tableNumber: normalizeTableLabel(table) ?? undefined,
   };
 
   const supabase = await createClient();
@@ -39,11 +40,12 @@ export default async function AdminHistoryPage({
           />
         </div>
         <div>
-          <label className="mb-1.5 block text-xs font-semibold text-zinc-300">Table number</label>
+          <label className="mb-1.5 block text-xs font-semibold text-zinc-300">Table</label>
           <input
-            type="number"
+            type="text"
             name="table"
-            min={1}
+            autoCapitalize="characters"
+            maxLength={16}
             defaultValue={table ?? ''}
             placeholder="All tables"
             className="w-32 rounded-xl border border-white/10 bg-black/60 px-3.5 py-2 text-xs sm:text-sm font-semibold text-zinc-100 placeholder-zinc-500 outline-none focus:border-[#ff8a3d] focus:ring-1 focus:ring-[#ff8a3d]/40 transition-all"
@@ -56,9 +58,9 @@ export default async function AdminHistoryPage({
           Apply Filter
         </button>
         {date || table ? (
-          <a href="/admin/history" className="text-xs sm:text-sm font-semibold text-[#ff8a3d] hover:underline py-2 transition-colors">
+          <Link href="/admin/history" className="text-xs sm:text-sm font-semibold text-[#ff8a3d] hover:underline py-2 transition-colors">
             Clear filters
-          </a>
+          </Link>
         ) : null}
       </form>
 

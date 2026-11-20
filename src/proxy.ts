@@ -6,8 +6,8 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    // Skip static assets and image optimization files.
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
-  ],
+  // Only admin routes use Supabase Auth. Running the session refresh (a
+  // network round-trip to Supabase) on customer pages added latency to
+  // every tap and prefetch for guests who are never logged in.
+  matcher: ['/admin/:path*'],
 };

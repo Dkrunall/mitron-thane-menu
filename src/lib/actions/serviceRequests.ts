@@ -29,7 +29,7 @@ function isUniqueViolation(err: unknown): boolean {
  * atomic, and a conflict there is treated the same as the pre-check
  * finding one: a silent no-op, not an error.
  */
-export async function createServiceRequest(tableNumber: number, type: ServiceRequestType) {
+export async function createServiceRequest(tableNumber: string, type: ServiceRequestType) {
   const supabase = await createClient();
 
   const { data: table, error: tableError } = await supabase

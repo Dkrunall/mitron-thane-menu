@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { CartProvider, useCart } from '@/lib/cart/CartContext';
 import { formatPrice } from '@/lib/format';
 
-function CartBar({ tableNumber }: { tableNumber: number }) {
+function CartBar({ tableNumber }: { tableNumber: string }) {
   const { totalItems, totalPrice } = useCart();
   if (totalItems === 0) return null;
 
@@ -51,7 +51,7 @@ export function OrderHeader({
   isSearchOpen,
   onToggleSearch,
 }: {
-  tableNumber?: number;
+  tableNumber?: string;
   title?: string;
   backHref?: string;
   onBack?: () => void;
@@ -246,7 +246,7 @@ export function OrderFrame({
   showCartBar = true,
   children,
 }: {
-  tableNumber: number;
+  tableNumber: string;
   showCartBar?: boolean;
   children: React.ReactNode;
 }) {
@@ -268,7 +268,7 @@ export function OrderShell({
   showCartBar = true,
   children,
 }: {
-  tableNumber: number;
+  tableNumber: string;
   title: string;
   backHref?: string;
   showCartBar?: boolean;

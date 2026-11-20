@@ -11,7 +11,7 @@ export function TableQRCard({ table }: { table: AdminTable }) {
 
   useEffect(() => {
     let cancelled = false;
-    const url = `${window.location.origin}/order?table=${table.tableNumber}`;
+    const url = `${window.location.origin}/order?table=${encodeURIComponent(table.tableNumber)}`;
     QRCode.toDataURL(url, { margin: 1, width: 240 }).then((d) => {
       if (!cancelled) setDataUrl(d);
     });
@@ -50,7 +50,7 @@ export function TableQRCard({ table }: { table: AdminTable }) {
       <div className="flex items-center gap-2">
         <span className={`h-2 w-2 rounded-full ${table.isActive ? 'bg-[#22c55e] shadow-[0_0_6px_#22c55e]' : 'bg-rose-500 shadow-[0_0_6px_#f43f5e]'}`} />
         <p className="font-bold text-white text-sm sm:text-base">
-          Table {table.tableNumber < 10 ? `0${table.tableNumber}` : table.tableNumber}
+          Table {table.tableNumber}
         </p>
       </div>
 

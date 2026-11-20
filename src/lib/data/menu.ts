@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { parseAllergens } from '@/lib/allergens';
 import type { MenuCategory, MenuItem, MenuSection } from '@/types/menu';
+import type { BeverageMenu } from '@/types/database';
 
 /**
  * Fetches the full public menu (categories -> items -> variants), grouped
@@ -8,6 +9,9 @@ import type { MenuCategory, MenuItem, MenuSection } from '@/types/menu';
  * RLS allows anon to read all of categories/menu_items/menu_item_variants,
  * including unavailable items — the UI is responsible for greying those out
  * rather than hiding them (see 0002_rls.sql).
+ *
+ * Returns both beverage menus; the customer view narrows it with
+ * filterSectionsForBeverageMenu (lib/data/beverageMenu.ts).
  */
 export async function getMenuSections(): Promise<MenuSection[]> {
   const supabase = await createClient();
@@ -15,7 +19,7 @@ export async function getMenuSections(): Promise<MenuSection[]> {
   const { data, error } = await supabase
     .from('categories')
     .select(
-      `id, name, section, sort_order, image_url,
+      `id, name, section, sort_order, image_url, beverage_menu,
        menu_items (
          id, category_id, name, description, price, image_url,
          dietary_type, is_alcoholic, is_available, sort_order,
@@ -53,6 +57,7 @@ export async function getMenuSections(): Promise<MenuSection[]> {
       section: cat.section,
       sortOrder: cat.sort_order,
       imageUrl: cat.image_url,
+      beverageMenu: cat.beverage_menu,
       items,
     };
   });
@@ -77,7 +82,7 @@ export async function getCategoryById(categoryId: string): Promise<MenuCategory 
   const { data: cat, error } = await supabase
     .from('categories')
     .select(
-      `id, name, section, sort_order, image_url,
+      `id, name, section, sort_order, image_url, beverage_menu,
        menu_items (
          id, category_id, name, description, price, image_url,
          dietary_type, is_alcoholic, is_available, sort_order,
@@ -115,12 +120,15 @@ export async function getCategoryById(categoryId: string): Promise<MenuCategory 
     section: cat.section,
     sortOrder: cat.sort_order,
     imageUrl: cat.image_url,
+    beverageMenu: cat.beverage_menu,
     items,
   };
 }
 
-/** Single menu item with variants and its parent category name — used by the customer item detail screen. */
-export async function getMenuItemById(itemId: string): Promise<{ item: MenuItem; categoryName: string } | null> {
+/** Single menu item with variants and its parent category — used by the customer item detail screen. */
+export async function getMenuItemById(
+  itemId: string
+): Promise<{ item: MenuItem; categoryName: string; beverageMenu: BeverageMenu | null } | null> {
   const supabase = await createClient();
 
   const { data, error } = await supabase
@@ -128,7 +136,7 @@ export async function getMenuItemById(itemId: string): Promise<{ item: MenuItem;
     .select(
       `id, category_id, name, description, price, image_url,
        dietary_type, is_alcoholic, is_available, sort_order,
-       categories ( name ),
+       categories ( name, beverage_menu ),
        menu_item_variants ( id, label, price, sort_order )`
     )
     .eq('id', itemId)
@@ -136,6 +144,7 @@ export async function getMenuItemById(itemId: string): Promise<{ item: MenuItem;
 
   if (error) throw error;
   if (!data) return null;
+  const category = data.categories as unknown as { name: string; beverage_menu: BeverageMenu | null } | null;
 
   return {
     item: {
@@ -154,7 +163,8 @@ export async function getMenuItemById(itemId: string): Promise<{ item: MenuItem;
         .map((v) => ({ id: v.id, label: v.label, price: Number(v.price), sortOrder: v.sort_order }))
         .sort((a, b) => a.sortOrder - b.sortOrder),
     },
-    categoryName: (data.categories as unknown as { name: string } | null)?.name ?? 'Menu',
+    categoryName: category?.name ?? 'Menu',
+    beverageMenu: category?.beverage_menu ?? null,
   };
 }
 

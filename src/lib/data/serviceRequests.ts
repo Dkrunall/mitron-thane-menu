@@ -3,7 +3,7 @@ import type { Database, ServiceRequestStatus, ServiceRequestType } from '@/types
 
 export interface ServiceRequestView {
   id: string;
-  tableNumber: number;
+  tableNumber: string;
   type: ServiceRequestType;
   status: ServiceRequestStatus;
   createdAt: string;

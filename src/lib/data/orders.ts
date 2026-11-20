@@ -12,7 +12,7 @@ export interface OrderItemView {
 
 export interface OrderView {
   id: string;
-  tableNumber: number;
+  tableNumber: string;
   status: OrderStatus;
   createdAt: string;
   servedAt: string | null;
@@ -21,7 +21,7 @@ export interface OrderView {
 
 /** Used by the customer status screen — looked up by order id + table number together
  *  so a stray/guessed order id for the wrong table doesn't resolve. */
-export async function getOrderForTable(orderId: string, tableNumber: number): Promise<OrderView | null> {
+export async function getOrderForTable(orderId: string, tableNumber: string): Promise<OrderView | null> {
   const supabase = await createClient();
 
   const { data: order, error: orderError } = await supabase

@@ -175,6 +175,10 @@ export function MenuItemForm({
             + Add variant
           </button>
         </div>
+        <p className="mb-2 text-[11px] text-zinc-500">
+          Customers can only pick sizes listed here, so add every size, including the smallest (e.g. both 30ml
+          and Bottle). The price above is then only shown as the &quot;From&quot; price.
+        </p>
         {variants.length > 0 ? (
           <div className="space-y-2">
             {variants.map((v, i) => (

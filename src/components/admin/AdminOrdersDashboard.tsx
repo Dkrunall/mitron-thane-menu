@@ -467,7 +467,7 @@ export function AdminOrdersDashboard({
                   <div className="flex items-center gap-2.5">
                     <span className="h-2 w-2 rounded-full bg-[#ff8a3d] shadow-[0_0_8px_#ff8a3d]" />
                     <h2 className="display text-xl tracking-tight text-white">
-                      Table {group.tableNumber < 10 ? `0${group.tableNumber}` : group.tableNumber}
+                      Table {group.tableNumber}
                     </h2>
                   </div>
                   <span className="glass-pill rounded-full border border-white/10 px-2.5 py-0.5 text-xs font-bold text-zinc-300">

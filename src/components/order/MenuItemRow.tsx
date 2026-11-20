@@ -15,7 +15,7 @@ export function MenuItemRow({
 }: {
   item: MenuItem;
   categoryName: string;
-  tableNumber: number;
+  tableNumber: string;
 }) {
   const router = useRouter();
   const { addLine } = useCart();
@@ -29,9 +29,17 @@ export function MenuItemRow({
     ? formatPrice(item.price)
     : 'Sold out';
 
+  const itemHref = `/order/item/${item.id}?table=${tableNumber}`;
+
+  // Warm the route (loading skeleton + data) as soon as the finger touches
+  // down, so the tap itself navigates instantly.
+  function prefetchItem() {
+    if (item.isAvailable) router.prefetch(itemHref);
+  }
+
   function handleCardClick() {
     if (!item.isAvailable) return;
-    router.push(`/order/item/${item.id}?table=${tableNumber}`);
+    router.push(itemHref);
   }
 
   async function handleQuickAdd(e: React.MouseEvent) {
@@ -62,6 +70,8 @@ export function MenuItemRow({
   return (
     <div
       onClick={handleCardClick}
+      onPointerDown={prefetchItem}
+      onMouseEnter={prefetchItem}
       className={`overflow-hidden rounded-2xl border border-white/[0.07] bg-[#121215] hover:border-white/15 hover:bg-[#15151a] p-3.5 sm:p-4 transition-all duration-200 cursor-pointer select-none shadow-sm ${
         !item.isAvailable ? 'opacity-40 pointer-events-none' : ''
       }`}
