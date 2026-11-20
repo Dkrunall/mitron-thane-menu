@@ -6,6 +6,30 @@ import { NEXT_STATUS } from '@/lib/orderStatus';
 import { runAndNotifyIfReady } from '@/lib/push/notify';
 import type { OrderStatus } from '@/types/database';
 
+/** Returned (never thrown) to the staff dashboard: in production Next.js
+ *  replaces a thrown Server Action error's message with a generic one, so
+ *  the reason would never reach the screen. */
+export type StatusActionResult = { error: string | null };
+
+async function toResult(fn: () => Promise<unknown>, fallback: string): Promise<StatusActionResult> {
+  try {
+    await fn();
+    return { error: null };
+  } catch (err) {
+    if (err instanceof ActionError) return { error: err.message };
+    console.error('order status action failed:', err);
+    return { error: fallback };
+  }
+}
+
+export async function updateOrderItemStatus(orderItemId: string, status: OrderStatus): Promise<StatusActionResult> {
+  return toResult(() => updateOrderItemStatusUnsafe(orderItemId, status), 'Could not update item status.');
+}
+
+export async function advanceOrderItems(orderId: string): Promise<StatusActionResult> {
+  return toResult(() => advanceOrderItemsUnsafe(orderId), 'Could not update order status.');
+}
+
 /** Advances a single order item to the given status. RLS restricts this to
  *  admins, but RLS alone would let any admin session write *any* status to
  *  the item (skip stages, or move it backward) — the UI only ever offers
@@ -16,7 +40,7 @@ import type { OrderStatus } from '@/types/database';
  *  device) can't silently clobber this one. The parent order's own
  *  `status` is recomputed automatically by a DB trigger (see
  *  0011_order_item_status.sql) — this never writes to `orders` directly. */
-export async function updateOrderItemStatus(orderItemId: string, status: OrderStatus) {
+async function updateOrderItemStatusUnsafe(orderItemId: string, status: OrderStatus) {
   const supabase = await createClient();
 
   const { data: item, error: fetchError } = await supabase
@@ -70,7 +94,7 @@ const STATUS_RANK: Record<OrderStatus, number> = { placed: 0, preparing: 1, read
  * `orders.status` directly) so it can never fight the trigger that derives
  * the order's status from its items.
  */
-export async function advanceOrderItems(orderId: string) {
+async function advanceOrderItemsUnsafe(orderId: string) {
   const supabase = await createClient();
 
   const { data: items, error: fetchError } = await supabase

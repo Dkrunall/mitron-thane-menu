@@ -11,10 +11,22 @@ const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
 const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY;
 const VAPID_SUBJECT = process.env.VAPID_SUBJECT || 'mailto:admin@mitronthane.example';
 
-const pushConfigured = Boolean(VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY);
-if (pushConfigured) {
-  webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY!, VAPID_PRIVATE_KEY!);
+// Web Push is optional. Missing *or invalid* keys (e.g. placeholder values
+// left in the host's env) just disable it — setVapidDetails throws on a bad
+// key, and since this runs when the module loads, an unguarded throw here
+// would break every staff status-change action that imports this file.
+function configurePush(): boolean {
+  if (!VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) return false;
+  try {
+    webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
+    return true;
+  } catch (err) {
+    console.error('Web Push disabled — invalid VAPID settings:', err instanceof Error ? err.message : err);
+    return false;
+  }
 }
+
+const pushConfigured = configurePush();
 
 /**
  * Sends a "your order is ready" push to every device subscribed for this
@@ -84,7 +96,13 @@ export async function runAndNotifyIfReady<T>(
   if (before && before.status !== 'ready') {
     const { data: after } = await supabase.from('orders').select('status').eq('id', orderId).maybeSingle();
     if (after?.status === 'ready') {
-      await sendOrderReadyPush(supabase, orderId, before.tables.table_number);
+      // The status change already succeeded; a push failure must not undo
+      // that from the caller's point of view.
+      try {
+        await sendOrderReadyPush(supabase, orderId, before.tables.table_number);
+      } catch (err) {
+        console.error('sendOrderReadyPush failed:', err);
+      }
     }
   }
 

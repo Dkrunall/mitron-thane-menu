@@ -68,10 +68,11 @@ function ItemStatusButton({
     startTransition(async () => {
       setLocalStatus(nextStatus);
       try {
-        await updateOrderItemStatus(item.id, nextStatus);
-      } catch (err) {
+        const { error } = await updateOrderItemStatus(item.id, nextStatus);
         // localStatus reverts automatically on failure
-        onError(errorMessage(err, 'Could not update item status.'));
+        if (error) onError(error);
+      } catch (err) {
+        onError(errorMessage(err, 'Could not update item status. Check your connection.'));
       }
       // Reload inside the transition so the optimistic status is replaced by
       // the saved one, instead of flipping back while Realtime catches up.
@@ -136,10 +137,11 @@ function OrderCard({
         // all forward" — internally per-item (see advanceOrderItems), so
         // it can't drift out of sync with the individual item controls
         // below.
-        await advanceOrderItems(order.id);
-      } catch (err) {
+        const { error } = await advanceOrderItems(order.id);
         // localStatus reverts automatically on failure
-        onError(errorMessage(err, 'Could not update the order.'));
+        if (error) onError(error);
+      } catch (err) {
+        onError(errorMessage(err, 'Could not update the order. Check your connection.'));
       }
       await onChanged();
     });
