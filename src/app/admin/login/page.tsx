@@ -20,6 +20,7 @@ export default async function AdminLoginPage() {
             <div className="relative h-20 w-20 overflow-hidden rounded-full border border-white/15 shadow-[0_10px_28px_rgba(0,0,0,0.7),0_0_0_2px_rgba(255,255,255,0.08)]">
               <Image
                 src="/mitron-logo.png"
+                unoptimized
                 alt="Mitron Thane logo"
                 fill
                 sizes="80px"

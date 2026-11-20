@@ -99,6 +99,7 @@ export default async function Home({
           <div className="relative h-20 w-20 overflow-hidden rounded-full shadow-[0_10px_28px_rgba(0,0,0,0.6),0_0_0_2px_rgba(255,255,255,0.08)] sm:h-24 sm:w-24">
             <Image
               src="/mitron-logo.png"
+                unoptimized
               alt="Mitron Thane"
               fill
               sizes="96px"

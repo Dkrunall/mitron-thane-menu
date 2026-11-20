@@ -46,7 +46,19 @@ const STATUS_STYLE: Record<string, string> = {
  *  independently of the rest of the order (a poured drink is done in
  *  seconds, a plated dish can take 20 minutes). The order's own status
  *  pill above is a read-only aggregate, kept in sync by a DB trigger. */
-function ItemStatusButton({ item }: { item: AdminOrderItem }) {
+function errorMessage(err: unknown, fallback: string): string {
+  return err instanceof Error && err.message ? err.message : fallback;
+}
+
+function ItemStatusButton({
+  item,
+  onChanged,
+  onError,
+}: {
+  item: AdminOrderItem;
+  onChanged: () => Promise<void>;
+  onError: (message: string) => void;
+}) {
   const [isPending, startTransition] = useTransition();
   const [localStatus, setLocalStatus] = useOptimistic(item.status);
   const nextStatus = NEXT_STATUS[localStatus];
@@ -57,9 +69,13 @@ function ItemStatusButton({ item }: { item: AdminOrderItem }) {
       setLocalStatus(nextStatus);
       try {
         await updateOrderItemStatus(item.id, nextStatus);
-      } catch {
+      } catch (err) {
         // localStatus reverts automatically on failure
+        onError(errorMessage(err, 'Could not update item status.'));
       }
+      // Reload inside the transition so the optimistic status is replaced by
+      // the saved one, instead of flipping back while Realtime catches up.
+      await onChanged();
     });
   }
 
@@ -77,7 +93,17 @@ function ItemStatusButton({ item }: { item: AdminOrderItem }) {
   );
 }
 
-function OrderCard({ order, soundOn }: { order: AdminOrder; soundOn: boolean }) {
+function OrderCard({
+  order,
+  soundOn,
+  onChanged,
+  onError,
+}: {
+  order: AdminOrder;
+  soundOn: boolean;
+  onChanged: () => Promise<void>;
+  onError: (message: string) => void;
+}) {
   const [isPending, startTransition] = useTransition();
   const [localStatus, setLocalStatus] = useOptimistic(order.status);
   const nextStatus = NEXT_STATUS[localStatus];
@@ -111,9 +137,11 @@ function OrderCard({ order, soundOn }: { order: AdminOrder; soundOn: boolean }) 
         // it can't drift out of sync with the individual item controls
         // below.
         await advanceOrderItems(order.id);
-      } catch {
+      } catch (err) {
         // localStatus reverts automatically on failure
+        onError(errorMessage(err, 'Could not update the order.'));
       }
+      await onChanged();
     });
   }
 
@@ -156,7 +184,7 @@ function OrderCard({ order, soundOn }: { order: AdminOrder; soundOn: boolean }) 
                   </p>
                 ) : null}
               </div>
-              <ItemStatusButton item={item} />
+              <ItemStatusButton item={item} onChanged={onChanged} onError={onError} />
             </div>
           </li>
         ))}
@@ -286,6 +314,7 @@ export function AdminOrdersDashboard({
   const [orders, setOrders] = useState(initialOrders);
   const [serviceRequests, setServiceRequests] = useState(initialServiceRequests);
   const [soundOn, setSoundOn] = useState(true);
+  const [actionError, setActionError] = useState<string | null>(null);
   const knownOrderIdsRef = useRef<Set<string> | null>(null);
   const knownServiceRequestIdsRef = useRef<Set<string> | null>(null);
   const soundOnRef = useRef(soundOn);
@@ -404,6 +433,18 @@ export function AdminOrdersDashboard({
           <AlertsControl soundOn={soundOn} onToggleSound={setSoundOn} />
         </div>
 
+        {actionError ? (
+          <div role="alert" className="flex items-center justify-between gap-3 rounded-xl border border-rose-500/30 bg-rose-950/40 p-3 text-xs font-medium text-rose-300">
+            <span className="flex items-center gap-2">
+              <WarningIcon className="h-4 w-4 shrink-0" />
+              {actionError}
+            </span>
+            <button type="button" onClick={() => setActionError(null)} className="font-bold text-rose-200 hover:text-white cursor-pointer">
+              Dismiss
+            </button>
+          </div>
+        ) : null}
+
         {groups.length > 0 ? (
           <div className="flex flex-wrap items-center gap-2">
             <span className="glass-pill flex items-center gap-1.5 rounded-full border border-[#ff6830]/40 bg-[#ff6830]/10 px-3 py-1 text-xs font-bold text-[#ff8a3d]">
@@ -488,7 +529,7 @@ export function AdminOrdersDashboard({
                         </div>
                       ) : null}
                       {sitting.map((order) => (
-                        <OrderCard key={order.id} order={order} soundOn={soundOn} />
+                        <OrderCard key={order.id} order={order} soundOn={soundOn} onChanged={refetch} onError={setActionError} />
                       ))}
                     </div>
                   ))}

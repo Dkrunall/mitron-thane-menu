@@ -39,6 +39,7 @@ export function HeroVideoHeader({
         <div className="relative h-18 w-18 overflow-hidden rounded-full shadow-[0_8px_24px_rgba(0,0,0,0.6),0_0_0_2px_rgba(255,255,255,0.1)] sm:h-20 sm:w-20">
           <Image
             src="/mitron-logo.png"
+                unoptimized
             alt="Mitron Thane logo"
             fill
             sizes="80px"

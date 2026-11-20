@@ -33,6 +33,7 @@ export default async function ProtectedAdminLayout({ children }: { children: Rea
               <div className="relative flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/15 shadow-[0_4px_16px_rgba(0,0,0,0.5)] gold-glow-sm">
                 <Image
                   src="/mitron-logo.png"
+                unoptimized
                   alt="Mitron Thane logo"
                   fill
                   sizes="40px"
