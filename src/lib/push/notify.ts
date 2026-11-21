@@ -4,8 +4,10 @@
 // is open. Never imported into client code (only from Server Actions,
 // e.g. lib/actions/adminOrders.ts).
 import webpush from 'web-push';
+import { after } from 'next/server';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { Database } from '@/types/database';
+import type { Database, OrderStatus } from '@/types/database';
+import { createServiceClient } from '@/lib/supabase/service';
 
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
 const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY;
@@ -28,14 +30,33 @@ function configurePush(): boolean {
 
 const pushConfigured = configurePush();
 
+// What the guest's phone shows for each order status change. 'placed'
+// (they just did that) and 'served' (staff is at the table) send nothing.
+const ORDER_STATUS_PUSH: Partial<Record<OrderStatus, (table: string) => { title: string; body: string }>> = {
+  preparing: (table) => ({
+    title: 'Your order is being prepared 🍳',
+    body: `Table ${table} — the kitchen has started on your order.`,
+  }),
+  ready: (table) => ({
+    title: 'Your order is ready! 🔔',
+    body: `Table ${table} — head to your table, staff is on the way.`,
+  }),
+};
+
 /**
- * Sends a "your order is ready" push to every device subscribed for this
- * order. A no-op if VAPID keys aren't configured (see .env.local.example)
- * — the in-tab alert still covers that case, so this is a pure
- * enhancement, never a hard dependency.
+ * Pushes an order status update to every device subscribed for this order
+ * (guests don't need to install anything on Android — Chrome delivers it
+ * with the tab in the background or the browser closed). A no-op if VAPID
+ * keys aren't configured.
  */
-async function sendOrderReadyPush(supabase: SupabaseClient<Database>, orderId: string, tableNumber: string) {
-  if (!pushConfigured) return;
+async function sendOrderStatusPush(
+  supabase: SupabaseClient<Database>,
+  orderId: string,
+  tableNumber: string,
+  status: OrderStatus
+) {
+  const message = ORDER_STATUS_PUSH[status];
+  if (!pushConfigured || !message) return;
 
   const { data: subs } = await supabase
     .from('push_subscriptions')
@@ -43,44 +64,98 @@ async function sendOrderReadyPush(supabase: SupabaseClient<Database>, orderId: s
     .eq('order_id', orderId);
   if (!subs || subs.length === 0) return;
 
-  // Same tag the in-tab alert uses (see showBrowserNotification's call
-  // site in OrderStatusView) — if the customer's tab happens to be open
-  // when this arrives, the two notifications collapse into one instead of
-  // stacking as duplicates in the notification tray.
+  // One tag per order: "Ready" replaces "Preparing" in the tray instead of
+  // stacking, and renotify makes the replacement buzz again. The in-tab
+  // alert on the status page uses the same tag, so the two collapse.
   const payload = JSON.stringify({
-    title: 'Your order is ready! 🔔',
-    body: `Table ${tableNumber} — head to your table, staff is on the way.`,
+    ...message(tableNumber),
     url: `/order/status?table=${tableNumber}&order=${orderId}`,
-    tag: `order-ready-${orderId}`,
+    tag: `order-status-${orderId}`,
+    renotify: true,
   });
 
+  await sendToSubscriptions(subs, payload, async (id) => {
+    await supabase.from('push_subscriptions').delete().eq('id', id);
+  });
+}
+
+interface StoredSubscription {
+  id: string;
+  endpoint: string;
+  p256dh: string;
+  auth: string;
+}
+
+async function sendToSubscriptions(
+  subs: StoredSubscription[],
+  payload: string,
+  removeGone: (id: string) => Promise<void>
+) {
   await Promise.all(
     subs.map(async (sub) => {
       try {
-        await webpush.sendNotification({ endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } }, payload);
+        // TTL: how long the push service keeps trying a phone that is
+        // offline/asleep. Urgency 'high' asks Android to wake the device
+        // right away instead of batching it into the next doze window.
+        await webpush.sendNotification({ endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } }, payload, {
+          TTL: 60 * 60,
+          urgency: 'high',
+        });
       } catch (err) {
         const statusCode = (err as { statusCode?: number } | null)?.statusCode;
         if (statusCode === 404 || statusCode === 410) {
           // Push service says this subscription is gone (browser data
-          // cleared, permission revoked, etc.) — clean it up rather than
-          // retrying it forever.
-          await supabase.from('push_subscriptions').delete().eq('id', sub.id);
+          // cleared, permission revoked, app uninstalled) — clean it up
+          // rather than retrying it forever.
+          await removeGone(sub.id);
         } else {
-          console.error('sendOrderReadyPush failed:', err);
+          console.error('Web Push send failed:', err);
         }
       }
     })
   );
 }
 
+export interface StaffAlert {
+  title: string;
+  body: string;
+  /** Same tag the in-page alert on Live Orders uses, so the two collapse. */
+  tag: string;
+}
+
 /**
- * Wraps an order_items mutation that might advance the parent order's
- * (derived) status to 'ready', firing the push exactly once if it
- * actually did. Compares before/after rather than trusting the caller's
- * own status math, since the order's status is computed by a DB trigger
- * (see 0011_order_item_status.sql), not set directly by these actions.
+ * Pushes an alert to every staff device that turned alerts on (Live
+ * Orders → Enable Alerts), so it arrives with the app closed or the phone
+ * locked. Runs after the response is sent (`after`), so a guest placing an
+ * order never waits on it, and never throws.
  */
-export async function runAndNotifyIfReady<T>(
+export function notifyStaff(alert: StaffAlert) {
+  if (!pushConfigured) return;
+  after(async () => {
+    try {
+      const supabase = createServiceClient();
+      if (!supabase) return;
+      const { data: subs, error } = await supabase.from('staff_push_subscriptions').select('id, endpoint, p256dh, auth');
+      if (error) throw error;
+      if (!subs || subs.length === 0) return;
+      const payload = JSON.stringify({ ...alert, url: '/admin/dashboard', requireInteraction: true });
+      await sendToSubscriptions(subs, payload, async (id) => {
+        await supabase.from('staff_push_subscriptions').delete().eq('id', id);
+      });
+    } catch (err) {
+      console.error('notifyStaff failed:', err);
+    }
+  });
+}
+
+/**
+ * Wraps an order_items mutation that might change the parent order's
+ * (derived) status, pushing the guest an update exactly once if it
+ * actually changed. Compares before/after rather than trusting the
+ * caller's own status math, since the order's status is computed by a DB
+ * trigger (see 0011_order_item_status.sql), not set directly.
+ */
+export async function runAndNotifyOnStatusChange<T>(
   supabase: SupabaseClient<Database>,
   orderId: string,
   fn: () => Promise<T>
@@ -93,15 +168,15 @@ export async function runAndNotifyIfReady<T>(
 
   const result = await fn();
 
-  if (before && before.status !== 'ready') {
+  if (before) {
     const { data: after } = await supabase.from('orders').select('status').eq('id', orderId).maybeSingle();
-    if (after?.status === 'ready') {
+    if (after && after.status !== before.status) {
       // The status change already succeeded; a push failure must not undo
       // that from the caller's point of view.
       try {
-        await sendOrderReadyPush(supabase, orderId, before.tables.table_number);
+        await sendOrderStatusPush(supabase, orderId, before.tables.table_number, after.status);
       } catch (err) {
-        console.error('sendOrderReadyPush failed:', err);
+        console.error('sendOrderStatusPush failed:', err);
       }
     }
   }

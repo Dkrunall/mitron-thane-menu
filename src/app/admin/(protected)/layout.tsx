@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import Image from 'next/image';
 import { getCurrentAdmin } from '@/lib/data/admin';
-import { signOut } from '@/lib/actions/auth';
+import { SignOutButton } from '@/components/admin/SignOutButton';
 import { AdminNavBar } from '@/components/admin/AdminNavBar';
 
 export default async function ProtectedAdminLayout({ children }: { children: React.ReactNode }) {
@@ -63,14 +63,7 @@ export default async function ProtectedAdminLayout({ children }: { children: Rea
               <span className="hidden md:inline-block glass-pill px-3 py-1 rounded-full text-xs font-medium text-zinc-400 border border-white/10">
                 {admin.email}
               </span>
-              <form action={signOut}>
-                <button
-                  type="submit"
-                  className="rounded-xl border border-white/10 bg-white/[0.06] hover:bg-white/10 px-3.5 sm:px-4 py-1.5 text-xs font-bold text-zinc-200 hover:text-white active:scale-95 transition-all cursor-pointer shadow-sm"
-                >
-                  Sign Out
-                </button>
-              </form>
+              <SignOutButton />
             </div>
           </div>
 

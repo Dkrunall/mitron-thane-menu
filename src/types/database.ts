@@ -334,6 +334,26 @@ export interface Database {
           },
         ];
       };
+      staff_push_subscriptions: {
+        Row: {
+          id: string;
+          user_id: string;
+          endpoint: string;
+          p256dh: string;
+          auth: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          endpoint: string;
+          p256dh: string;
+          auth: string;
+          created_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['staff_push_subscriptions']['Insert']>;
+        Relationships: [];
+      };
       push_subscriptions: {
         Row: {
           id: string;

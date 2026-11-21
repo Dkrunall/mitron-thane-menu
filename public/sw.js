@@ -33,15 +33,22 @@ self.addEventListener('push', (event) => {
     data = { title: 'Mitron Thane', body: event.data.text() };
   }
 
-  const { title, body, url, tag } = data;
+  const { title, body, url, tag, requireInteraction, renotify } = data;
 
+  // Every push must show a notification — iOS revokes the subscription of
+  // a web app that receives pushes silently.
   event.waitUntil(
     self.registration.showNotification(title || 'Mitron Thane', {
       body,
       icon: '/icons/icon-192.png',
       badge: '/icons/icon-192.png',
       tag: tag || 'mitron-notification',
-      vibrate: [200, 100, 200],
+      // Staff alerts stay on screen until tapped/dismissed (Android/desktop).
+      requireInteraction: !!requireInteraction,
+      // Buzz again when a newer update replaces one with the same tag
+      // (e.g. "Ready" replacing "Preparing").
+      renotify: !!renotify && !!tag,
+      vibrate: [300, 100, 300, 100, 300],
       data: { url: url || '/' },
     })
   );

@@ -7,6 +7,8 @@ import { fetchActiveOrders, groupOrdersByTable, type AdminOrder, type AdminOrder
 import { fetchPendingServiceRequests, type ServiceRequestView } from '@/lib/data/serviceRequests';
 import { advanceOrderItems, updateOrderItemStatus } from '@/lib/actions/adminOrders';
 import { acknowledgeServiceRequest } from '@/lib/actions/serviceRequests';
+import { subscribeStaffPush } from '@/lib/actions/push';
+import { ensurePushSubscription, isPushSupported } from '@/lib/push/subscribeClient';
 import { NEXT_STATUS, ORDER_STATUS_LABEL } from '@/lib/orderStatus';
 import { formatPrice } from '@/lib/format';
 import { useRefetchOnFocus } from '@/lib/useRefetchOnFocus';
@@ -259,19 +261,56 @@ function ServiceRequestCard({ request, onAcknowledge }: { request: ServiceReques
 }
 
 type NotificationState = NotificationPermission | 'unsupported' | null;
+// 'on' = this device gets alerts even with the app closed / phone locked.
+type BackgroundState = 'checking' | 'on' | 'failed' | 'needs-install' | 'unsupported';
+
+function isIOS(): boolean {
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
+
+function isStandalone(): boolean {
+  return window.matchMedia('(display-mode: standalone)').matches || (navigator as Navigator & { standalone?: boolean }).standalone === true;
+}
+
+/** Registers this phone for background staff push; never throws. */
+async function registerBackgroundAlerts(): Promise<BackgroundState> {
+  if (!isPushSupported()) {
+    // iPhone Safari only supports web push for apps added to the Home Screen.
+    return isIOS() && !isStandalone() ? 'needs-install' : 'unsupported';
+  }
+  const subscription = await ensurePushSubscription();
+  if (!subscription) return 'failed';
+  return (await subscribeStaffPush(subscription)) ? 'on' : 'failed';
+}
 
 function AlertsControl({ soundOn, onToggleSound }: { soundOn: boolean; onToggleSound: (on: boolean) => void }) {
   const [permission, setPermission] = useState<NotificationState>(null);
+  const [background, setBackground] = useState<BackgroundState>('checking');
 
   useEffect(() => {
+    let cancelled = false;
+    const current = isNotificationSupported() ? getNotificationPermission() : null;
     // eslint-disable-next-line react-hooks/set-state-in-effect -- syncing from an external browser API on mount, not a derived-state cascade
-    setPermission(isNotificationSupported() ? getNotificationPermission() : 'unsupported');
+    setPermission(current ?? 'unsupported');
+    if (current === 'granted') {
+      // Re-register on every visit: keeps this phone's row fresh if the
+      // browser rotated its push subscription.
+      registerBackgroundAlerts().then((state) => {
+        if (!cancelled) setBackground(state);
+      });
+    } else if (!isPushSupported() && isIOS() && !isStandalone()) {
+      setBackground('needs-install');
+    }
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   async function handleEnableNotifications() {
     primeAudio();
     const result = await requestNotificationPermission();
     setPermission(result);
+    if (result === 'granted') setBackground(await registerBackgroundAlerts());
   }
 
   return (
@@ -291,17 +330,27 @@ function AlertsControl({ soundOn, onToggleSound }: { soundOn: boolean; onToggleS
         {soundOn ? 'Chime Alerts Enabled' : 'Chimes Muted'}
       </button>
 
-      {permission !== null && permission !== 'unsupported' && permission !== 'granted' ? (
+      {background === 'needs-install' ? (
+        <span className="text-[11px] text-amber-300/90">
+          iPhone: tap Share → Add to Home Screen, open Mitron Staff from there, then enable alerts.
+        </span>
+      ) : permission !== null && permission !== 'unsupported' && permission !== 'granted' ? (
         <button
           type="button"
           onClick={handleEnableNotifications}
           className="rounded-xl border border-white/10 bg-white/[0.05] hover:bg-white/10 px-3 py-1.5 text-zinc-200 hover:text-white transition-colors"
         >
-          Enable Desktop Alerts
+          Enable Phone Alerts
         </button>
       ) : null}
       {permission === 'denied' ? (
-        <span className="text-[11px] text-zinc-500">Desktop notifications blocked in browser</span>
+        <span className="text-[11px] text-zinc-500">Notifications are blocked — allow them in the browser/app settings</span>
+      ) : null}
+      {permission === 'granted' && background === 'on' ? (
+        <span className="text-[11px] text-emerald-400">Background alerts on for this phone</span>
+      ) : null}
+      {permission === 'granted' && background === 'failed' ? (
+        <span className="text-[11px] text-amber-300/90">Alerts only while this page is open (background alerts unavailable)</span>
       ) : null}
     </div>
   );

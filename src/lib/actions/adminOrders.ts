@@ -3,7 +3,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { ActionError, toActionResult, type ActionResult } from '@/lib/actions/errors';
 import { NEXT_STATUS } from '@/lib/orderStatus';
-import { runAndNotifyIfReady } from '@/lib/push/notify';
+import { runAndNotifyOnStatusChange } from '@/lib/push/notify';
 import type { OrderStatus } from '@/types/database';
 
 export type StatusActionResult = ActionResult;
@@ -47,7 +47,7 @@ async function updateOrderItemStatusUnsafe(orderItemId: string, status: OrderSta
     );
   }
 
-  await runAndNotifyIfReady(supabase, item.order_id, async () => {
+  await runAndNotifyOnStatusChange(supabase, item.order_id, async () => {
     const { data: updated, error } = await supabase
       .from('order_items')
       .update({ status })
@@ -100,7 +100,7 @@ async function advanceOrderItemsUnsafe(orderId: string) {
   const next = NEXT_STATUS[current];
   if (!next) return;
 
-  await runAndNotifyIfReady(supabase, orderId, async () => {
+  await runAndNotifyOnStatusChange(supabase, orderId, async () => {
     const { error } = await supabase
       .from('order_items')
       .update({ status: next })

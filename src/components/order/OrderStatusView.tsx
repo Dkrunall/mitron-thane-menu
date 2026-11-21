@@ -9,6 +9,8 @@ import {
   getNotificationPermission,
   isNotificationSupported,
   playReadyChime,
+  primeAudio,
+  requestNotificationPermission,
   showBrowserNotification,
   vibrateIfSupported,
 } from '@/lib/alerts';
@@ -144,7 +146,7 @@ export function OrderStatusView({
         showBrowserNotification(
           'Your order is ready!',
           `Table ${order.tableNumber} — head to your table, staff is on the way.`,
-          `order-ready-${order.id}`
+          `order-status-${order.id}`
         );
       }
       statusRef.current = next.status;
@@ -309,6 +311,31 @@ export function OrderStatusView({
       {/* 4-Step Timeline Stepper matching reference design */}
       <StatusStepper status={order.status} />
 
+      {notificationPermission === 'default' && order.status !== 'served' ? (
+        <button
+          type="button"
+          onClick={async () => {
+            primeAudio();
+            setNotificationPermission(await requestNotificationPermission());
+          }}
+          className="mx-auto flex items-center justify-center gap-2 rounded-full border border-[#ff6830]/50 bg-[#ff6830]/15 px-4 py-2 text-xs font-bold text-[#ff8a3d] active:scale-95 transition-all"
+        >
+          <BellIcon className="h-3.5 w-3.5" />
+          Notify me when my order is ready
+        </button>
+      ) : null}
+      {notificationPermission === 'granted' && order.status !== 'served' ? (
+        <p className="flex items-center justify-center gap-1.5 text-[11px] text-emerald-300/70 text-center">
+          <BellIcon className="h-3 w-3 shrink-0" />
+          We&apos;ll notify you even if you leave this page.
+        </p>
+      ) : null}
+      {notificationPermission === 'unsupported' && order.status !== 'served' ? (
+        <p className="flex items-center justify-center gap-1.5 text-[11px] text-amber-200/60 text-center">
+          <BellOffIcon className="h-3 w-3 shrink-0" />
+          Keep this page open — you&apos;ll hear a chime when your order is ready.
+        </p>
+      ) : null}
       {notificationPermission === 'denied' ? (
         <p className="flex items-center justify-center gap-1.5 text-[11px] text-amber-200/60 text-center">
           <BellOffIcon className="h-3 w-3 shrink-0" />

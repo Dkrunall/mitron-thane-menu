@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server';
 import { ActionError, toActionResult, type ActionResult } from '@/lib/actions/errors';
 import { getActiveBeverageMenu, isCategoryVisible } from '@/lib/data/beverageMenu';
 import type { BeverageMenu } from '@/types/database';
+import { notifyStaff } from '@/lib/push/notify';
 
 const GENERIC_FAILURE_MESSAGE = 'Something went wrong placing your order. Please try again.';
 
@@ -52,7 +53,7 @@ async function placeOrderUnsafe(tableNumber: string) {
   const variantIds = [...new Set(cartRows.map((l) => l.variant_id).filter((id): id is string => !!id))];
 
   const [{ data: menuItems, error: itemsError }, activeMenu] = await Promise.all([
-    supabase.from('menu_items').select('id, price, is_available, categories ( beverage_menu )').in('id', menuItemIds),
+    supabase.from('menu_items').select('id, name, price, is_available, categories ( beverage_menu )').in('id', menuItemIds),
     getActiveBeverageMenu(supabase),
   ]);
   if (itemsError) throw itemsError;
@@ -123,6 +124,14 @@ async function placeOrderUnsafe(tableNumber: string) {
   // this table sees the removal live via their cart_items realtime
   // subscription (see CartContext).
   await supabase.from('cart_items').delete().in('id', cartRows.map((r) => r.id));
+
+  // Background push to staff phones (Live Orders shows the same alert
+  // in-page while it's open; matching tag collapses the two).
+  notifyStaff({
+    title: `New order — Table ${tableNumber}`,
+    body: orderItemsToInsert.map((i) => `${i.quantity}× ${itemById.get(i.menu_item_id)?.name ?? 'Item'}`).join(', '),
+    tag: `new-order-${order.id}`,
+  });
 
   redirect(`/order/status?table=${tableNumber}&order=${order.id}`);
 }

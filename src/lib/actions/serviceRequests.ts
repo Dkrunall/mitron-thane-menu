@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { ActionError, toActionResult, type ActionResult } from '@/lib/actions/errors';
 import type { ServiceRequestType } from '@/types/database';
+import { notifyStaff } from '@/lib/push/notify';
 
 // Postgres SQLSTATE for a unique-constraint violation — hit here when two
 // guests race to raise the same request (see service_requests_pending_unique
@@ -60,11 +61,23 @@ async function createServiceRequestUnsafe(tableNumber: string, type: ServiceRequ
   if (existingError) throw existingError;
   if (existing) return;
 
-  const { error: insertError } = await supabase.from('service_requests').insert({ table_id: table.id, type });
+  const { data: created, error: insertError } = await supabase
+    .from('service_requests')
+    .insert({ table_id: table.id, type })
+    .select('id')
+    .single();
   if (insertError) {
     if (isUniqueViolation(insertError)) return;
     throw insertError;
   }
+
+  // Background push to staff phones; same title/tag as the in-page alert
+  // on Live Orders so the two collapse into one.
+  notifyStaff({
+    title: `Table ${tableNumber} — ${type === 'call_waiter' ? 'Call Waiter' : 'Request Bill'}`,
+    body: 'Tap to view on the live orders board.',
+    tag: `service-request-${created.id}`,
+  });
 }
 
 /** Marks a request as handled. RLS restricts this to admins. */
