@@ -4,7 +4,9 @@ import { getCurrentAdmin } from '@/lib/data/admin';
 import { LoginForm } from '@/components/admin/LoginForm';
 
 export default async function AdminLoginPage() {
-  const admin = await getCurrentAdmin();
+  // If the sign-in check itself fails (network trouble), show the form
+  // rather than an error page: signing in again is the way forward.
+  const admin = await getCurrentAdmin().catch(() => null);
   if (admin) redirect('/admin/dashboard');
 
   return (

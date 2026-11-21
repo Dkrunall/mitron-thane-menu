@@ -106,15 +106,42 @@ export async function requestNotificationPermission(): Promise<NotificationPermi
 
 export function showBrowserNotification(title: string, body: string, tag = 'opa-order') {
   if (!isNotificationSupported() || Notification.permission !== 'granted') return;
+  // Matching `tag` between this and a Web Push notification for the same
+  // event (see lib/push/notify.ts) makes the OS replace rather than stack
+  // them, in the rare case both arrive — e.g. the customer's tab is open
+  // when the push also lands.
+  const options: NotificationOptions = {
+    body,
+    tag,
+    icon: '/icons/icon-192.png',
+    badge: '/icons/icon-192.png',
+    // Tapping it (handled in public/sw.js) reopens this page.
+    data: { url: window.location.pathname + window.location.search },
+  };
+
+  // Android Chrome (and installed home-screen apps) refuse `new
+  // Notification()` and only show notifications through the service
+  // worker, so staff phones/tablets never saw a single alert. Use the
+  // service worker first (public/sw.js, registered on every page).
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker
+      .getRegistration()
+      .then((registration) => {
+        if (registration) return registration.showNotification(title, options);
+        new Notification(title, options);
+      })
+      .catch(() => {
+        try {
+          new Notification(title, options);
+        } catch {
+          // No way to show it on this browser; the chime still plays.
+        }
+      });
+    return;
+  }
   try {
-    // Matching `tag` between this and a Web Push notification for the same
-    // event (see lib/push/notify.ts) makes the OS replace rather than
-    // stack them, in the rare case both arrive — e.g. the customer's tab
-    // is open when the push also lands.
-    new Notification(title, { body, tag });
+    new Notification(title, options);
   } catch {
-    // Some mobile browsers (Android Chrome) only allow notifications via a
-    // Service Worker registration and throw on the direct constructor —
-    // fail silently rather than break the dashboard.
+    // No way to show it on this browser; the chime still plays.
   }
 }

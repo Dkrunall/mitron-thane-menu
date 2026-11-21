@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
-import { ActionError } from '@/lib/actions/errors';
+import { ActionError, toActionResult, type ActionResult } from '@/lib/actions/errors';
 import { requireManager } from '@/lib/actions/requireManager';
 import { normalizeTableLabel } from '@/lib/tableLabel';
 
@@ -16,22 +16,22 @@ function isForeignKeyViolation(err: unknown): boolean {
   return typeof err === 'object' && err !== null && 'code' in err && (err as { code?: unknown }).code === FOREIGN_KEY_VIOLATION;
 }
 
-async function withSafeErrors<T>(fn: () => Promise<T>): Promise<T> {
-  try {
-    await requireManager();
-    return await fn();
-  } catch (err) {
-    if (err instanceof ActionError) throw err;
-    console.error('tables action failed:', err);
-    throw new ActionError(GENERIC_FAILURE_MESSAGE);
-  }
+function withSafeErrors(fn: () => Promise<unknown>): Promise<ActionResult> {
+  return toActionResult(
+    async () => {
+      await requireManager();
+      await fn();
+    },
+    GENERIC_FAILURE_MESSAGE,
+    'tables action'
+  );
 }
 
 const UNIQUE_VIOLATION = '23505';
 
 /** Adds one table with a text label (e.g. "M13") to a floor section,
  *  placed after that section's existing tables. */
-export async function createTable(rawLabel: string, rawSection: string) {
+export async function createTable(rawLabel: string, rawSection: string): Promise<ActionResult> {
   return withSafeErrors(async () => {
     const label = normalizeTableLabel(rawLabel);
     if (!label) {
@@ -70,7 +70,7 @@ export async function createTable(rawLabel: string, rawSection: string) {
   });
 }
 
-export async function setTableActive(id: string, isActive: boolean) {
+export async function setTableActive(id: string, isActive: boolean): Promise<ActionResult> {
   return withSafeErrors(async () => {
     const supabase = await createClient();
     const { error } = await supabase.from('tables').update({ is_active: isActive }).eq('id', id);
@@ -79,7 +79,7 @@ export async function setTableActive(id: string, isActive: boolean) {
   });
 }
 
-export async function deleteTable(id: string) {
+export async function deleteTable(id: string): Promise<ActionResult> {
   return withSafeErrors(async () => {
     const supabase = await createClient();
     const { error } = await supabase.from('tables').delete().eq('id', id);

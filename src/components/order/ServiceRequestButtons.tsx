@@ -1,5 +1,6 @@
 'use client';
 
+import { throwIfActionError } from '@/lib/actions/errors';
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { createServiceRequest } from '@/lib/actions/serviceRequests';
@@ -74,7 +75,7 @@ export function ServiceRequestButtons({ tableNumber }: { tableNumber: string }) 
     setError(null);
     setPending((prev) => ({ ...prev, [type]: true }));
     try {
-      await createServiceRequest(tableNumber, type);
+      throwIfActionError(await createServiceRequest(tableNumber, type));
     } catch {
       setPending((prev) => ({ ...prev, [type]: false }));
       setError('Could not reach the kitchen. Please ask a staff member directly.');

@@ -1,5 +1,6 @@
 'use client';
 
+import { throwIfActionError } from '@/lib/actions/errors';
 import { useEffect, useState, useTransition } from 'react';
 import QRCode from 'qrcode';
 import { setTableActive, deleteTable } from '@/lib/actions/tables';
@@ -23,7 +24,7 @@ export function TableQRCard({ table }: { table: AdminTable }) {
   function handleToggleActive() {
     startTransition(async () => {
       try {
-        await setTableActive(table.id, !table.isActive);
+        throwIfActionError(await setTableActive(table.id, !table.isActive));
       } catch (err) {
         window.alert(err instanceof Error && err.message ? err.message : 'Failed to update table.');
       }
@@ -34,7 +35,7 @@ export function TableQRCard({ table }: { table: AdminTable }) {
     if (!window.confirm(`Delete Table ${table.tableNumber}? This can't be undone.`)) return;
     startTransition(async () => {
       try {
-        await deleteTable(table.id);
+        throwIfActionError(await deleteTable(table.id));
       } catch (err) {
         window.alert(err instanceof Error && err.message ? err.message : 'Failed to delete table.');
       }

@@ -1,5 +1,6 @@
 'use client';
 
+import { throwIfActionError } from '@/lib/actions/errors';
 import { useState, useTransition } from 'react';
 import { createTable } from '@/lib/actions/tables';
 import { downloadTableQrPdf } from '@/lib/qr/generatePdf';
@@ -29,7 +30,7 @@ export function TablesManager({ tables }: { tables: AdminTable[] }) {
     setError(null);
     startTransition(async () => {
       try {
-        await createTable(label, section);
+        throwIfActionError(await createTable(label, section));
         setLabel('');
       } catch (err) {
         setError(err instanceof Error && err.message ? err.message : 'Failed to add table.');

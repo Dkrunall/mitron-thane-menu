@@ -1,5 +1,6 @@
 'use client';
 
+import { throwIfActionError } from '@/lib/actions/errors';
 import { useState, useTransition } from 'react';
 import type { MenuItem } from '@/types/menu';
 import { deleteMenuItem, setMenuItemAvailability } from '@/lib/actions/menu';
@@ -14,7 +15,7 @@ export function MenuItemAdminRow({ item, categoryId }: { item: MenuItem; categor
   function handleToggleAvailability() {
     startTransition(async () => {
       try {
-        await setMenuItemAvailability(item.id, !item.isAvailable);
+        throwIfActionError(await setMenuItemAvailability(item.id, !item.isAvailable));
       } catch (err) {
         window.alert(err instanceof Error && err.message ? err.message : 'Failed to update availability.');
       }
@@ -25,7 +26,7 @@ export function MenuItemAdminRow({ item, categoryId }: { item: MenuItem; categor
     if (!window.confirm(`Delete "${item.name}"? This can't be undone.`)) return;
     startTransition(async () => {
       try {
-        await deleteMenuItem(item.id);
+        throwIfActionError(await deleteMenuItem(item.id));
       } catch (err) {
         window.alert(err instanceof Error && err.message ? err.message : 'Failed to delete item.');
       }

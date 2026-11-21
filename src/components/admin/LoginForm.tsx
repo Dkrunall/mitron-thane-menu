@@ -1,5 +1,6 @@
 'use client';
 
+import { throwIfActionError } from '@/lib/actions/errors';
 import { useState, useTransition } from 'react';
 import { unstable_rethrow } from 'next/navigation';
 import { signIn } from '@/lib/actions/auth';
@@ -16,7 +17,7 @@ export function LoginForm() {
     setError(null);
     startTransition(async () => {
       try {
-        await signIn(email, password);
+        throwIfActionError(await signIn(email, password));
       } catch (err) {
         unstable_rethrow(err);
         setError(err instanceof Error && err.message ? err.message : 'Something went wrong. Please try again.');

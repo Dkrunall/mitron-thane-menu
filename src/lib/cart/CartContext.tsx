@@ -103,6 +103,12 @@ export function CartProvider({
   const [identity, setIdentity] = useState<{ guestId: string; guestName: string } | null>(null);
   const [lines, setLines] = useState<CartLine[]>([]);
   const tableIdRef = useRef<string | null>(null);
+  // Latest lines for addLine, which may run after a wait (see its retry)
+  // and must not merge into a stale snapshot.
+  const linesRef = useRef<CartLine[]>([]);
+  useEffect(() => {
+    linesRef.current = lines;
+  }, [lines]);
 
   // Resolve this device's guest identity once on mount (localStorage isn't
   // available during SSR, so this can't be a lazy useState initializer).
@@ -126,8 +132,6 @@ export function CartProvider({
         .eq('is_active', true)
         .maybeSingle();
       if (cancelled || !table) return;
-
-      tableIdRef.current = table.id;
 
       const { data: rows } = await supabase
         .from('cart_items')
@@ -159,6 +163,10 @@ export function CartProvider({
           }
         )
         .subscribe();
+
+      // Only now accept adds: setting this before the initial load meant a
+      // fast tap's line could be overwritten by that load's older snapshot.
+      tableIdRef.current = table.id;
     }
 
     init();
@@ -197,9 +205,13 @@ export function CartProvider({
       if (!identity) return Promise.resolve(false);
       const currentIdentity = identity;
 
-      function performInsert() {
+      // Waits for the database to confirm the line. It used to fire the
+      // write and report success straight away, so the screen said "Added
+      // to cart!" even when the write failed or was cut off by the page
+      // navigating back — and the item silently never reached the cart.
+      async function performInsert(): Promise<boolean> {
         const supabase = createClient();
-        const existing = lines.find(
+        const existing = linesRef.current.find(
           (l) =>
             l.guestId === currentIdentity.guestId &&
             l.menuItemId === input.menuItemId &&
@@ -210,14 +222,22 @@ export function CartProvider({
         if (existing) {
           const nextQuantity = existing.quantity + input.quantity;
           setLines((prev) => prev.map((l) => (l.id === existing.id ? { ...l, quantity: nextQuantity } : l)));
-          supabase.from('cart_items').update({ quantity: nextQuantity, updated_at: new Date().toISOString() }).eq('id', existing.id).then();
-          return;
+          const { error } = await supabase
+            .from('cart_items')
+            .update({ quantity: nextQuantity, updated_at: new Date().toISOString() })
+            .eq('id', existing.id);
+          if (error) {
+            console.error('Failed to update cart line:', error);
+            setLines((prev) => prev.map((l) => (l.id === existing.id ? { ...l, quantity: existing.quantity } : l)));
+            return false;
+          }
+          return true;
         }
 
         const id = crypto.randomUUID();
         const newLine: CartLine = { ...input, id, guestId: currentIdentity.guestId, guestName: currentIdentity.guestName };
         setLines((prev) => [...prev, newLine]);
-        supabase
+        const { error } = await supabase
           .from('cart_items')
           .insert({
             id,
@@ -233,14 +253,16 @@ export function CartProvider({
             quantity: input.quantity,
             notes: input.notes,
             image_url: input.imageUrl,
-          })
-          .then();
+          });
+        if (error) {
+          console.error('Failed to add cart line:', error);
+          setLines((prev) => prev.filter((l) => l.id !== id));
+          return false;
+        }
+        return true;
       }
 
-      if (tableIdRef.current) {
-        performInsert();
-        return Promise.resolve(true);
-      }
+      if (tableIdRef.current) return performInsert();
 
       // The table/cart lookup (see init() below) hasn't resolved yet —
       // e.g. a customer tapping "+ Add" within the first instant the menu
@@ -254,16 +276,15 @@ export function CartProvider({
           attempts += 1;
           if (tableIdRef.current) {
             clearInterval(retry);
-            performInsert();
-            resolve(true);
-          } else if (attempts >= 20) {
+            void performInsert().then(resolve);
+          } else if (attempts >= 60) {
             clearInterval(retry);
             resolve(false);
           }
         }, 150);
       });
     },
-    [identity, lines]
+    [identity]
   );
 
   const updateQuantity = useCallback((id: string, quantity: number) => {

@@ -1,5 +1,6 @@
 'use client';
 
+import { throwIfActionError } from '@/lib/actions/errors';
 import { useState, useTransition } from 'react';
 import { unstable_rethrow } from 'next/navigation';
 import Link from 'next/link';
@@ -75,7 +76,7 @@ export function CartReview({ tableNumber }: { tableNumber: string }) {
     void requestNotificationPermission();
     startTransition(async () => {
       try {
-        await placeOrder(tableNumber);
+        throwIfActionError(await placeOrder(tableNumber));
       } catch (err) {
         unstable_rethrow(err);
         setError(

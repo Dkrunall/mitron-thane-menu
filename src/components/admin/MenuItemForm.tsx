@@ -1,5 +1,6 @@
 'use client';
 
+import { throwIfActionError } from '@/lib/actions/errors';
 import { useState, useTransition } from 'react';
 import { createMenuItem, updateMenuItem, type MenuItemInput, type MenuItemVariantInput } from '@/lib/actions/menu';
 import type { DietaryType } from '@/types/database';
@@ -65,8 +66,8 @@ export function MenuItemForm({
     };
     startTransition(async () => {
       try {
-        if (itemId) await updateMenuItem(itemId, input);
-        else await createMenuItem(input);
+        if (itemId) throwIfActionError(await updateMenuItem(itemId, input));
+        else throwIfActionError(await createMenuItem(input));
         onDone?.();
       } catch (err) {
         setError(err instanceof Error && err.message ? err.message : 'Failed to save item.');

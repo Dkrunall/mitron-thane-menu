@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
-import { ActionError } from '@/lib/actions/errors';
+import { ActionError, toActionResult, type ActionResult } from '@/lib/actions/errors';
 import { requireManager } from '@/lib/actions/requireManager';
 import type { BeverageMenu, DietaryType } from '@/types/database';
 
@@ -18,15 +18,15 @@ function isForeignKeyViolation(err: unknown): boolean {
   return typeof err === 'object' && err !== null && 'code' in err && (err as { code?: unknown }).code === FOREIGN_KEY_VIOLATION;
 }
 
-async function withSafeErrors<T>(fn: () => Promise<T>): Promise<T> {
-  try {
-    await requireManager();
-    return await fn();
-  } catch (err) {
-    if (err instanceof ActionError) throw err;
-    console.error('menu action failed:', err);
-    throw new ActionError(GENERIC_FAILURE_MESSAGE);
-  }
+function withSafeErrors(fn: () => Promise<unknown>): Promise<ActionResult> {
+  return toActionResult(
+    async () => {
+      await requireManager();
+      await fn();
+    },
+    GENERIC_FAILURE_MESSAGE,
+    'menu action'
+  );
 }
 
 // ── Categories ───────────────────────────────────────────────────────────
@@ -45,7 +45,7 @@ function validBeverageMenu(value: BeverageMenu | null): BeverageMenu | null {
   throw new ActionError('Choose which menu this category belongs to.');
 }
 
-export async function createCategory(input: CategoryInput) {
+export async function createCategory(input: CategoryInput): Promise<ActionResult> {
   return withSafeErrors(async () => {
     if (!input.name.trim() || !input.section.trim()) throw new ActionError('Name and section are required.');
     const supabase = await createClient();
@@ -62,7 +62,7 @@ export async function createCategory(input: CategoryInput) {
   });
 }
 
-export async function updateCategory(id: string, input: CategoryInput) {
+export async function updateCategory(id: string, input: CategoryInput): Promise<ActionResult> {
   return withSafeErrors(async () => {
     if (!input.name.trim() || !input.section.trim()) throw new ActionError('Name and section are required.');
     const supabase = await createClient();
@@ -82,7 +82,7 @@ export async function updateCategory(id: string, input: CategoryInput) {
   });
 }
 
-export async function deleteCategory(id: string) {
+export async function deleteCategory(id: string): Promise<ActionResult> {
   return withSafeErrors(async () => {
     const supabase = await createClient();
     // Cascades to menu_items -> menu_item_variants (on delete cascade) —
@@ -103,7 +103,7 @@ export async function deleteCategory(id: string) {
 }
 
 /** The admin switch: Party beverage menu on (All Day drinks hidden) or off. */
-export async function setPartyMenuEnabled(enabled: boolean) {
+export async function setPartyMenuEnabled(enabled: boolean): Promise<ActionResult> {
   return withSafeErrors(async () => {
     if (typeof enabled !== 'boolean') throw new ActionError('Invalid setting.');
     const supabase = await createClient();
@@ -146,7 +146,7 @@ function validateMenuItemInput(input: MenuItemInput) {
   }
 }
 
-export async function createMenuItem(input: MenuItemInput) {
+export async function createMenuItem(input: MenuItemInput): Promise<ActionResult> {
   return withSafeErrors(async () => {
     validateMenuItemInput(input);
     const supabase = await createClient();
@@ -185,7 +185,7 @@ export async function createMenuItem(input: MenuItemInput) {
   });
 }
 
-export async function updateMenuItem(id: string, input: MenuItemInput) {
+export async function updateMenuItem(id: string, input: MenuItemInput): Promise<ActionResult> {
   return withSafeErrors(async () => {
     validateMenuItemInput(input);
     const supabase = await createClient();
@@ -238,7 +238,7 @@ export async function updateMenuItem(id: string, input: MenuItemInput) {
   });
 }
 
-export async function deleteMenuItem(id: string) {
+export async function deleteMenuItem(id: string): Promise<ActionResult> {
   return withSafeErrors(async () => {
     const supabase = await createClient();
     const { error } = await supabase.from('menu_items').delete().eq('id', id);
@@ -253,7 +253,7 @@ export async function deleteMenuItem(id: string) {
   });
 }
 
-export async function setMenuItemAvailability(id: string, isAvailable: boolean) {
+export async function setMenuItemAvailability(id: string, isAvailable: boolean): Promise<ActionResult> {
   return withSafeErrors(async () => {
     const supabase = await createClient();
     const { error } = await supabase.from('menu_items').update({ is_available: isAvailable }).eq('id', id);

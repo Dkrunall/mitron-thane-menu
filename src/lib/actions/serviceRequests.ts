@@ -1,7 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
-import { ActionError } from '@/lib/actions/errors';
+import { ActionError, toActionResult, type ActionResult } from '@/lib/actions/errors';
 import type { ServiceRequestType } from '@/types/database';
 
 // Postgres SQLSTATE for a unique-constraint violation — hit here when two
@@ -29,7 +29,16 @@ function isUniqueViolation(err: unknown): boolean {
  * atomic, and a conflict there is treated the same as the pre-check
  * finding one: a silent no-op, not an error.
  */
-export async function createServiceRequest(tableNumber: string, type: ServiceRequestType) {
+export async function createServiceRequest(tableNumber: string, type: ServiceRequestType): Promise<ActionResult> {
+  return toActionResult(
+    () => createServiceRequestUnsafe(tableNumber, type),
+    'Could not reach the kitchen. Please ask a staff member directly.',
+    'createServiceRequest'
+  );
+}
+
+async function createServiceRequestUnsafe(tableNumber: string, type: ServiceRequestType) {
+  if (type !== 'call_waiter' && type !== 'request_bill') throw new ActionError('Unknown request.');
   const supabase = await createClient();
 
   const { data: table, error: tableError } = await supabase
@@ -59,7 +68,11 @@ export async function createServiceRequest(tableNumber: string, type: ServiceReq
 }
 
 /** Marks a request as handled. RLS restricts this to admins. */
-export async function acknowledgeServiceRequest(id: string) {
+export async function acknowledgeServiceRequest(id: string): Promise<ActionResult> {
+  return toActionResult(() => acknowledgeServiceRequestUnsafe(id), 'Could not update the request.', 'acknowledgeServiceRequest');
+}
+
+async function acknowledgeServiceRequestUnsafe(id: string) {
   const supabase = await createClient();
 
   const { error } = await supabase

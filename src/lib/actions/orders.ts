@@ -1,8 +1,8 @@
 'use server';
 
-import { redirect, unstable_rethrow } from 'next/navigation';
+import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import { ActionError } from '@/lib/actions/errors';
+import { ActionError, toActionResult, type ActionResult } from '@/lib/actions/errors';
 import { getActiveBeverageMenu, isCategoryVisible } from '@/lib/data/beverageMenu';
 import type { BeverageMenu } from '@/types/database';
 
@@ -21,20 +21,12 @@ const GENERIC_FAILURE_MESSAGE = 'Something went wrong placing your order. Please
  * it. Reading + deleting by exact row id here means a concurrent add
  * simply survives, untouched, for the next order instead.
  *
- * Server Actions forward a thrown Error's `message` to the client verbatim,
- * so anything unexpected (a raw Postgres/PostgREST error, say) is caught
- * and swapped for a generic message here rather than leaking internals —
- * only our own ActionError messages are meant to reach the customer.
+ * Failures are returned, not thrown (see ActionResult); anything unexpected
+ * (a raw Postgres/PostgREST error, say) becomes a generic message rather
+ * than leaking internals.
  */
-export async function placeOrder(tableNumber: string) {
-  try {
-    await placeOrderUnsafe(tableNumber);
-  } catch (err) {
-    unstable_rethrow(err); // let redirect() on success propagate untouched
-    if (err instanceof ActionError) throw err;
-    console.error('placeOrder failed:', err);
-    throw new ActionError(GENERIC_FAILURE_MESSAGE);
-  }
+export async function placeOrder(tableNumber: string): Promise<ActionResult> {
+  return toActionResult(() => placeOrderUnsafe(tableNumber), GENERIC_FAILURE_MESSAGE, 'placeOrder');
 }
 
 async function placeOrderUnsafe(tableNumber: string) {

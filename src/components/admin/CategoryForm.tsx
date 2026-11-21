@@ -1,5 +1,6 @@
 'use client';
 
+import { throwIfActionError } from '@/lib/actions/errors';
 import { useState, useTransition } from 'react';
 import { createCategory, updateCategory, type CategoryInput } from '@/lib/actions/menu';
 import type { BeverageMenu } from '@/types/database';
@@ -27,8 +28,8 @@ export function CategoryForm({
     const input: CategoryInput = { name, section, sortOrder, imageUrl, beverageMenu };
     startTransition(async () => {
       try {
-        if (categoryId) await updateCategory(categoryId, input);
-        else await createCategory(input);
+        if (categoryId) throwIfActionError(await updateCategory(categoryId, input));
+        else throwIfActionError(await createCategory(input));
         if (!categoryId) {
           setName('');
           setSection('');

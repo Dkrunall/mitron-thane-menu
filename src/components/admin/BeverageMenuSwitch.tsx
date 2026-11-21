@@ -1,5 +1,6 @@
 'use client';
 
+import { throwIfActionError } from '@/lib/actions/errors';
 import { useState, useTransition } from 'react';
 import { setPartyMenuEnabled } from '@/lib/actions/menu';
 import { WarningIcon } from '@/components/icons';
@@ -16,7 +17,7 @@ export function BeverageMenuSwitch({ partyEnabled }: { partyEnabled: boolean }) 
     setEnabled(next);
     startTransition(async () => {
       try {
-        await setPartyMenuEnabled(next);
+        throwIfActionError(await setPartyMenuEnabled(next));
       } catch (err) {
         setEnabled(!next);
         setError(err instanceof Error && err.message ? err.message : 'Failed to switch the beverage menu.');

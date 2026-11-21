@@ -1,33 +1,19 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
-import { ActionError } from '@/lib/actions/errors';
+import { ActionError, toActionResult, type ActionResult } from '@/lib/actions/errors';
 import { NEXT_STATUS } from '@/lib/orderStatus';
 import { runAndNotifyIfReady } from '@/lib/push/notify';
 import type { OrderStatus } from '@/types/database';
 
-/** Returned (never thrown) to the staff dashboard: in production Next.js
- *  replaces a thrown Server Action error's message with a generic one, so
- *  the reason would never reach the screen. */
-export type StatusActionResult = { error: string | null };
-
-async function toResult(fn: () => Promise<unknown>, fallback: string): Promise<StatusActionResult> {
-  try {
-    await fn();
-    return { error: null };
-  } catch (err) {
-    if (err instanceof ActionError) return { error: err.message };
-    console.error('order status action failed:', err);
-    return { error: fallback };
-  }
-}
+export type StatusActionResult = ActionResult;
 
 export async function updateOrderItemStatus(orderItemId: string, status: OrderStatus): Promise<StatusActionResult> {
-  return toResult(() => updateOrderItemStatusUnsafe(orderItemId, status), 'Could not update item status.');
+  return toActionResult(() => updateOrderItemStatusUnsafe(orderItemId, status), 'Could not update item status.', 'updateOrderItemStatus');
 }
 
 export async function advanceOrderItems(orderId: string): Promise<StatusActionResult> {
-  return toResult(() => advanceOrderItemsUnsafe(orderId), 'Could not update order status.');
+  return toActionResult(() => advanceOrderItemsUnsafe(orderId), 'Could not update order status.', 'advanceOrderItems');
 }
 
 /** Advances a single order item to the given status. RLS restricts this to

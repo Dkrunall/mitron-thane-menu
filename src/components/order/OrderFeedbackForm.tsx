@@ -1,5 +1,6 @@
 'use client';
 
+import { throwIfActionError } from '@/lib/actions/errors';
 import { useState, useTransition } from 'react';
 import { unstable_rethrow } from 'next/navigation';
 import { submitOrderFeedback } from '@/lib/actions/feedback';
@@ -63,7 +64,7 @@ export function OrderFeedbackForm({ orderId }: { orderId: string }) {
     setError(null);
     startTransition(async () => {
       try {
-        await submitOrderFeedback(orderId, rating, comment);
+        throwIfActionError(await submitOrderFeedback(orderId, rating, comment));
         setSubmitted(true);
       } catch (err) {
         unstable_rethrow(err);

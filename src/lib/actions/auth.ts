@@ -1,20 +1,13 @@
 'use server';
 
-import { redirect, unstable_rethrow } from 'next/navigation';
+import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import { ActionError } from '@/lib/actions/errors';
+import { ActionError, toActionResult, type ActionResult } from '@/lib/actions/errors';
 
 const GENERIC_FAILURE_MESSAGE = 'Something went wrong signing in. Please try again.';
 
-export async function signIn(email: string, password: string) {
-  try {
-    await signInUnsafe(email, password);
-  } catch (err) {
-    unstable_rethrow(err); // let redirect() on success propagate untouched
-    if (err instanceof ActionError) throw err;
-    console.error('signIn failed:', err);
-    throw new ActionError(GENERIC_FAILURE_MESSAGE);
-  }
+export async function signIn(email: string, password: string): Promise<ActionResult> {
+  return toActionResult(() => signInUnsafe(email, password), GENERIC_FAILURE_MESSAGE, 'signIn');
 }
 
 async function signInUnsafe(email: string, password: string) {
@@ -22,8 +15,18 @@ async function signInUnsafe(email: string, password: string) {
 
   const supabase = await createClient();
 
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) throw new ActionError('Incorrect email or password.');
+  const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+  if (error) {
+    // Supabase Auth limits sign-in attempts; say so instead of blaming the password.
+    if (error.status === 429 || error.code === 'over_request_rate_limit') {
+      throw new ActionError('Too many sign-in attempts. Please wait a few minutes and try again.');
+    }
+    if (error.code === 'invalid_credentials' || error.status === 400) {
+      throw new ActionError('Incorrect email or password.');
+    }
+    console.error('signInWithPassword failed:', error);
+    throw new ActionError('Could not reach the sign-in service. Check the connection and try again.');
+  }
 
   const { data: admin } = await supabase
     .from('admin_users')

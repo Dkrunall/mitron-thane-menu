@@ -1,8 +1,7 @@
 'use server';
 
-import { unstable_rethrow } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import { ActionError } from '@/lib/actions/errors';
+import { ActionError, toActionResult, type ActionResult } from '@/lib/actions/errors';
 
 const GENERIC_FAILURE_MESSAGE = 'Something went wrong submitting your rating. Please try again.';
 
@@ -12,15 +11,8 @@ const GENERIC_FAILURE_MESSAGE = 'Something went wrong submitting your rating. Pl
  * RLS insert policy) and only once per order — a repeat submission for the
  * same order id is rejected by the table's unique constraint on order_id.
  */
-export async function submitOrderFeedback(orderId: string, rating: number, comment: string) {
-  try {
-    await submitOrderFeedbackUnsafe(orderId, rating, comment);
-  } catch (err) {
-    unstable_rethrow(err);
-    if (err instanceof ActionError) throw err;
-    console.error('submitOrderFeedback failed:', err);
-    throw new ActionError(GENERIC_FAILURE_MESSAGE);
-  }
+export async function submitOrderFeedback(orderId: string, rating: number, comment: string): Promise<ActionResult> {
+  return toActionResult(() => submitOrderFeedbackUnsafe(orderId, rating, comment), GENERIC_FAILURE_MESSAGE, 'submitOrderFeedback');
 }
 
 async function submitOrderFeedbackUnsafe(orderId: string, rating: number, comment: string) {

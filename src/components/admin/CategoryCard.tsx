@@ -1,5 +1,6 @@
 'use client';
 
+import { throwIfActionError } from '@/lib/actions/errors';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useTransition } from 'react';
@@ -25,7 +26,7 @@ export function CategoryCard({
     if (!window.confirm(`Delete "${name}" and all ${itemCount} item(s) in it? This can't be undone.`)) return;
     startTransition(async () => {
       try {
-        await deleteCategory(categoryId);
+        throwIfActionError(await deleteCategory(categoryId));
       } catch (err) {
         window.alert(err instanceof Error && err.message ? err.message : 'Failed to delete category.');
       }
@@ -55,7 +56,7 @@ export function CategoryCard({
         type="button"
         onClick={handleDelete}
         disabled={isPending}
-        className="absolute top-3 right-3 hidden text-xs font-bold text-rose-400 group-hover:block disabled:opacity-60 hover:text-rose-300 transition-colors cursor-pointer rounded-lg border border-rose-500/30 bg-rose-950/40 px-2 py-0.5"
+        className="absolute top-3 right-3 hidden text-xs font-bold text-rose-400 group-hover:block [@media(hover:none)]:block disabled:opacity-60 hover:text-rose-300 transition-colors cursor-pointer rounded-lg border border-rose-500/30 bg-rose-950/40 px-2 py-0.5"
       >
         Delete
       </button>

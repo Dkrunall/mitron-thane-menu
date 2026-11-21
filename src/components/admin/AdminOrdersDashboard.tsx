@@ -1,5 +1,6 @@
 'use client';
 
+import { throwIfActionError } from '@/lib/actions/errors';
 import { useCallback, useEffect, useOptimistic, useRef, useState, useTransition } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { fetchActiveOrders, groupOrdersByTable, type AdminOrder, type AdminOrderItem } from '@/lib/data/adminOrders';
@@ -223,7 +224,7 @@ function ServiceRequestCard({ request, onAcknowledge }: { request: ServiceReques
   function handleAcknowledge() {
     startTransition(async () => {
       try {
-        await acknowledgeServiceRequest(request.id);
+        throwIfActionError(await acknowledgeServiceRequest(request.id));
         onAcknowledge(request.id);
       } catch {
         // leave it in the list — the admin can just try again
@@ -337,7 +338,10 @@ export function AdminOrdersDashboard({
           for (const order of newlyPlaced) {
             showBrowserNotification(
               `New order — Table ${order.tableNumber}`,
-              order.items.map((i) => `${i.quantity}× ${i.menuItemName}`).join(', ')
+              order.items.map((i) => `${i.quantity}× ${i.menuItemName}`).join(', '),
+              // Own tag per alert: a shared tag made each new alert replace
+              // the previous, unseen one on the phone.
+              `new-order-${order.id}`
             );
           }
         }
@@ -361,7 +365,8 @@ export function AdminOrdersDashboard({
           for (const request of newlyRaised) {
             showBrowserNotification(
               `Table ${request.tableNumber} — ${SERVICE_REQUEST_LABEL[request.type].label}`,
-              'Tap to view on the live orders board.'
+              'Tap to view on the live orders board.',
+              `service-request-${request.id}`
             );
           }
         }
