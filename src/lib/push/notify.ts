@@ -183,3 +183,35 @@ export async function runAndNotifyOnStatusChange<T>(
 
   return result;
 }
+
+export type TestPushResult = 'scheduled' | 'not-registered' | 'disabled';
+
+/**
+ * "Send test alert" on Live Orders: pushes one alert to just this device
+ * after a short delay, so staff can lock the phone / switch apps first and
+ * see exactly what a real new-order alert looks like in the background.
+ */
+export async function sendStaffTestPush(endpoint: string, delayMs = 5000): Promise<TestPushResult> {
+  const supabase = pushConfigured ? createServiceClient() : null;
+  if (!supabase) return 'disabled';
+  const { data: sub } = await supabase
+    .from('staff_push_subscriptions')
+    .select('id, endpoint, p256dh, auth')
+    .eq('endpoint', endpoint)
+    .maybeSingle();
+  if (!sub) return 'not-registered';
+  after(async () => {
+    await new Promise((resolve) => setTimeout(resolve, delayMs));
+    const payload = JSON.stringify({
+      title: 'Test alert — Mitron Staff',
+      body: 'Background alerts are working on this phone.',
+      tag: `staff-test-${Date.now()}`,
+      url: '/admin/dashboard',
+      requireInteraction: true,
+    });
+    await sendToSubscriptions([sub], payload, async (id) => {
+      await supabase.from('staff_push_subscriptions').delete().eq('id', id);
+    });
+  });
+  return 'scheduled';
+}

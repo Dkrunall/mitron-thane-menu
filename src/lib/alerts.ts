@@ -110,11 +110,14 @@ export function showBrowserNotification(title: string, body: string, tag = 'opa-
   // event (see lib/push/notify.ts) makes the OS replace rather than stack
   // them, in the rare case both arrive — e.g. the customer's tab is open
   // when the push also lands.
-  const options: NotificationOptions = {
+  const options: NotificationOptions & { vibrate?: number[] } = {
     body,
     tag,
     icon: '/icons/icon-192.png',
     badge: '/icons/icon-192.png',
+    // Android buzzes with the notification itself (navigator.vibrate alone
+    // is ignored when the screen is off or the page isn't focused).
+    vibrate: [300, 100, 300, 100, 300],
     // Tapping it (handled in public/sw.js) reopens this page.
     data: { url: window.location.pathname + window.location.search },
   };
@@ -127,8 +130,15 @@ export function showBrowserNotification(title: string, body: string, tag = 'opa-
     navigator.serviceWorker
       .getRegistration()
       .then((registration) => {
-        if (registration) return registration.showNotification(title, options);
-        new Notification(title, options);
+        if (!registration) {
+          new Notification(title, options);
+          return;
+        }
+        // The background push for the same event may already be on screen;
+        // replacing it would be silent, so leave it as it is.
+        return registration.getNotifications({ tag }).then((existing) => {
+          if (existing.length === 0) return registration.showNotification(title, options);
+        });
       })
       .catch(() => {
         try {

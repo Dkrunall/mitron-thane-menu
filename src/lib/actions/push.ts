@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { getCurrentAdmin } from '@/lib/data/admin';
+import { sendStaffTestPush, type TestPushResult } from '@/lib/push/notify';
 
 export interface PushSubscriptionInput {
   endpoint: string;
@@ -77,5 +78,16 @@ export async function unsubscribeStaffPush(endpoint: string): Promise<void> {
     if (error) console.error('unsubscribeStaffPush failed:', error);
   } catch (err) {
     console.error('unsubscribeStaffPush failed:', err);
+  }
+}
+
+/** Live Orders "Send test alert": one background push to this device. */
+export async function sendTestStaffAlert(endpoint: string): Promise<TestPushResult | 'failed'> {
+  try {
+    if (!(await getCurrentAdmin())) return 'failed';
+    return await sendStaffTestPush(endpoint);
+  } catch (err) {
+    console.error('sendTestStaffAlert failed:', err);
+    return 'failed';
   }
 }

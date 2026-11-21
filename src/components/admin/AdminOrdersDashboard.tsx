@@ -7,7 +7,7 @@ import { fetchActiveOrders, groupOrdersByTable, type AdminOrder, type AdminOrder
 import { fetchPendingServiceRequests, type ServiceRequestView } from '@/lib/data/serviceRequests';
 import { advanceOrderItems, updateOrderItemStatus } from '@/lib/actions/adminOrders';
 import { acknowledgeServiceRequest } from '@/lib/actions/serviceRequests';
-import { subscribeStaffPush } from '@/lib/actions/push';
+import { sendTestStaffAlert, subscribeStaffPush } from '@/lib/actions/push';
 import { ensurePushSubscription, isPushSupported } from '@/lib/push/subscribeClient';
 import { NEXT_STATUS, ORDER_STATUS_LABEL } from '@/lib/orderStatus';
 import { formatPrice } from '@/lib/format';
@@ -21,6 +21,7 @@ import {
   primeAudio,
   requestNotificationPermission,
   showBrowserNotification,
+  vibrateIfSupported,
 } from '@/lib/alerts';
 import { BellIcon, BellOffIcon, CheckIcon, ConciergeBellIcon, DocumentIcon, WarningIcon } from '@/components/icons';
 import type { ServiceRequestType } from '@/types/database';
@@ -306,6 +307,28 @@ function AlertsControl({ soundOn, onToggleSound }: { soundOn: boolean; onToggleS
     };
   }, []);
 
+  const [testStatus, setTestStatus] = useState<string | null>(null);
+
+  async function handleTestAlert() {
+    primeAudio();
+    vibrateIfSupported([300, 100, 300, 100, 300]);
+    setTestStatus('sending');
+    const registration = await navigator.serviceWorker?.getRegistration().catch(() => undefined);
+    const subscription = await registration?.pushManager?.getSubscription().catch(() => null);
+    const result = subscription ? await sendTestStaffAlert(subscription.endpoint) : 'not-registered';
+    if (result === 'scheduled') {
+      setTestStatus('Test alert coming in 5 seconds — lock the phone or switch apps now. It should pop up and buzz.');
+      return;
+    }
+    // No background push for this phone: show the in-page version instead.
+    showBrowserNotification('Test alert — Mitron Staff', 'Alerts work while this page is open.', `staff-test-${Date.now()}`);
+    setTestStatus(
+      result === 'disabled'
+        ? 'Shown here only: background alerts are not configured on the server yet.'
+        : 'Shown here only: this phone is not registered for background alerts — reload this page and try again.'
+    );
+  }
+
   async function handleEnableNotifications() {
     primeAudio();
     const result = await requestNotificationPermission();
@@ -334,24 +357,43 @@ function AlertsControl({ soundOn, onToggleSound }: { soundOn: boolean; onToggleS
         <span className="text-[11px] text-amber-300/90">
           iPhone: tap Share → Add to Home Screen, open Mitron Staff from there, then enable alerts.
         </span>
-      ) : permission !== null && permission !== 'unsupported' && permission !== 'granted' ? (
+      ) : permission !== null && permission !== 'unsupported' && permission !== 'granted' && permission !== 'denied' ? (
         <button
           type="button"
           onClick={handleEnableNotifications}
-          className="rounded-xl border border-white/10 bg-white/[0.05] hover:bg-white/10 px-3 py-1.5 text-zinc-200 hover:text-white transition-colors"
+          className="rounded-xl border border-[#ff6830]/50 bg-[#ff6830]/15 px-3 py-1.5 text-[#ff8a3d] transition-colors"
         >
           Enable Phone Alerts
         </button>
       ) : null}
+      {permission === 'unsupported' && background !== 'needs-install' ? (
+        <span className="text-[11px] text-amber-300/90">This browser can&apos;t show notifications — open the admin in Chrome.</span>
+      ) : null}
       {permission === 'denied' ? (
-        <span className="text-[11px] text-zinc-500">Notifications are blocked — allow them in the browser/app settings</span>
+        <span className="text-[11px] text-amber-300/90">
+          Notifications are blocked for this site — allow them in the phone&apos;s Settings → Notifications (or the browser&apos;s site settings), then reload.
+        </span>
+      ) : null}
+      {permission === 'granted' && background === 'checking' ? (
+        <span className="text-[11px] text-zinc-400">Setting up background alerts…</span>
       ) : null}
       {permission === 'granted' && background === 'on' ? (
         <span className="text-[11px] text-emerald-400">Background alerts on for this phone</span>
       ) : null}
-      {permission === 'granted' && background === 'failed' ? (
+      {permission === 'granted' && (background === 'failed' || background === 'unsupported') ? (
         <span className="text-[11px] text-amber-300/90">Alerts only while this page is open (background alerts unavailable)</span>
       ) : null}
+      {permission === 'granted' ? (
+        <button
+          type="button"
+          onClick={handleTestAlert}
+          disabled={testStatus === 'sending'}
+          className="rounded-xl border border-white/10 bg-white/[0.05] hover:bg-white/10 px-3 py-1.5 text-zinc-200 hover:text-white transition-colors disabled:opacity-60"
+        >
+          Send test alert
+        </button>
+      ) : null}
+      {testStatus && testStatus !== 'sending' ? <span className="w-full text-[11px] text-zinc-300">{testStatus}</span> : null}
     </div>
   );
 }
@@ -384,6 +426,7 @@ export function AdminOrdersDashboard({
         const newlyPlaced = next.filter((o) => o.status === 'placed' && !knownOrderIdsRef.current!.has(o.id));
         if (newlyPlaced.length > 0) {
           if (soundOnRef.current) playNewOrderChime();
+          vibrateIfSupported([300, 100, 300, 100, 300]);
           for (const order of newlyPlaced) {
             showBrowserNotification(
               `New order — Table ${order.tableNumber}`,
@@ -411,6 +454,7 @@ export function AdminOrdersDashboard({
         const newlyRaised = next.filter((r) => !knownServiceRequestIdsRef.current!.has(r.id));
         if (newlyRaised.length > 0) {
           if (soundOnRef.current) playServiceRequestChime();
+          vibrateIfSupported([300, 100, 300, 100, 300]);
           for (const request of newlyRaised) {
             showBrowserNotification(
               `Table ${request.tableNumber} — ${SERVICE_REQUEST_LABEL[request.type].label}`,
